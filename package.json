@@ -15,10 +15,12 @@
   "dependencies": {
     "commander": "^15.0.0",
     "fs-extra": "^11.3.5",
+    "inquirer": "^14.0.2",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.10",
     "@types/node": "^26.0.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
