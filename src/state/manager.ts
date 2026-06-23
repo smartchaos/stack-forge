@@ -17,7 +17,7 @@ function defaultStages(): WorkflowState["stages"] {
   for (const name of STAGE_ORDER) {
     stages[name] = { status: "pending", provider: "", artifact: null };
   }
-  return stages as WorkflowState["stages"];
+  return stages as unknown as WorkflowState["stages"];
 }
 
 export class StateManager {
