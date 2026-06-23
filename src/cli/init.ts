@@ -3,7 +3,7 @@ import { join } from "path";
 import { stringify as dumpYaml } from "yaml";
 import { scanForPlugins } from "../discovery/scanner.js";
 import { matchProviders } from "../discovery/matcher.js";
-import { loadProviders, loadCapabilities } from "../discovery/registry.js";
+import { loadProviders, loadCapabilities, loadManifest } from "../discovery/registry.js";
 import { generateOrchestrator } from "../generator/orchestrator.js";
 import { generateStages } from "../generator/stages.js";
 import { generateCommands } from "../generator/commands.js";
@@ -32,8 +32,9 @@ export async function runInit(projectDir: string, options: InitOptions): Promise
   const providerDefs = await loadProviders();
   const detected = matchProviders(scanResult, providerDefs);
 
-  // 2. Load capabilities
+  // 2. Load capabilities and manifest
   const capabilities = await loadCapabilities();
+  const manifest = await loadManifest();
 
   // 3. Build provider mapping (capability → provider)
   const providerMap: Record<string, string> = {};
@@ -88,6 +89,44 @@ export async function runInit(projectDir: string, options: InitOptions): Promise
     description: options.description,
   });
 
-  // 10. Generate CLAUDE.md additions
-  await generateClaudeMd(projectDir, { workflowName: options.workflow });
+  // 10. Generate CLAUDE.md with plugin guidance
+  await generateClaudeMd(projectDir, {
+    workflowName: options.workflow,
+    detected,
+    manifest,
+    capabilities,
+  });
+
+  // 11. Print summary
+  console.log("\nStack Forge initialized!\n");
+
+  // Print detected providers
+  const detectedNames = Object.keys(detected);
+  if (detectedNames.length > 0) {
+    console.log("Detected providers:");
+    for (const [name, provider] of Object.entries(detected)) {
+      console.log(`  ✓ ${name} (${provider.capabilities.join(", ")})`);
+    }
+    console.log();
+  }
+
+  // Print missing providers
+  const missing: string[] = [];
+  for (const entry of manifest) {
+    const isDetected = detectedNames.includes(entry.name);
+    if (!isDetected) {
+      missing.push(entry.name);
+      console.log(`  ✗ ${entry.name} — ${entry.description}`);
+      console.log(`    Install: ${entry.install.command}`);
+    }
+  }
+
+  if (missing.length > 0) {
+    console.log("\nInstall the missing providers above, then run: cforge update\n");
+  }
+
+  console.log("Next steps:");
+  console.log("  1. Install any missing providers listed above");
+  console.log("  2. In Claude Code, run: /workflow feature \"<description>\"");
+  console.log();
 }

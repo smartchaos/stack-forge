@@ -7,6 +7,21 @@ import { tmpdir } from "os";
 describe("claude-md generator", () => {
   const testDir = join(tmpdir(), "cforge-test-claudemd");
 
+  const baseOptions = {
+    workflowName: "feature",
+    detected: {},
+    manifest: [],
+    capabilities: {
+      brainstorm: { name: "Brainstorm", description: "Brainstorm", input: "", output: "", default_provider: "superpowers" },
+      specification: { name: "Specification", description: "Spec", input: "", output: "", default_provider: "openspec" },
+      planning: { name: "Planning", description: "Plan", input: "", output: "", default_provider: "superpowers" },
+      implementation: { name: "Implementation", description: "Impl", input: "", output: "", default_provider: "builtin" },
+      review: { name: "Review", description: "Review", input: "", output: "", default_provider: "gstack" },
+      release: { name: "Release", description: "Release", input: "", output: "", default_provider: "gstack" },
+      memory: { name: "Memory", description: "Memory", input: "", output: "", default_provider: "claude-mem" },
+    },
+  };
+
   beforeEach(async () => {
     await mkdir(testDir, { recursive: true });
   });
@@ -16,17 +31,45 @@ describe("claude-md generator", () => {
   });
 
   it("creates CLAUDE.md with Stack Forge section", async () => {
-    await generateClaudeMd(testDir, { workflowName: "feature" });
+    await generateClaudeMd(testDir, baseOptions);
     const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
     expect(content).toContain("## Stack Forge");
     expect(content).toContain("/workflow");
+    expect(content).toContain("Missing Providers");
   });
 
   it("does not duplicate Stack Forge section", async () => {
     await writeFile(join(testDir, "CLAUDE.md"), "## Stack Forge\nExisting");
-    await generateClaudeMd(testDir, { workflowName: "feature" });
+    await generateClaudeMd(testDir, baseOptions);
     const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
     const matches = content.match(/## Stack Forge/g);
     expect(matches?.length).toBe(1);
+  });
+
+  it("shows detected providers", async () => {
+    const opts = {
+      ...baseOptions,
+      detected: {
+        superpowers: { name: "superpowers", capabilities: ["brainstorm", "planning"], source: "test", detected_at: "2026-01-01" },
+      },
+    };
+    await generateClaudeMd(testDir, opts);
+    const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
+    expect(content).toContain("Detected Providers");
+    expect(content).toContain("superpowers");
+    expect(content).toContain("Ready");
+  });
+
+  it("shows missing providers with install commands", async () => {
+    const opts = {
+      ...baseOptions,
+      manifest: [
+        { name: "openspec", description: "Spec framework", capabilities: ["specification"], priority: "required" as const, install: { type: "npm" as const, command: "npm install -g openspec" } },
+      ],
+    };
+    await generateClaudeMd(testDir, opts);
+    const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
+    expect(content).toContain("Missing Providers");
+    expect(content).toContain("npm install -g openspec");
   });
 });
