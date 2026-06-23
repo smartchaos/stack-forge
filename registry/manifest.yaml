@@ -1,0 +1,32 @@
+- name: superpowers
+  description: "Workflow methodology (brainstorm, planning, TDD, review)"
+  capabilities: [brainstorm, planning]
+  priority: required
+  install:
+    type: claude_plugin
+    command: "/plugin install superpowers@claude-plugins-official"
+
+- name: openspec
+  description: "Spec-driven development framework"
+  capabilities: [specification]
+  priority: required
+  install:
+    type: npm
+    command: "npm install -g @fission-ai/openspec@latest"
+  post_install: "openspec init"
+
+- name: gstack
+  description: "Code review, QA, shipping skills"
+  capabilities: [review, release]
+  priority: recommended
+  install:
+    type: git_clone
+    command: "git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup"
+
+- name: claude-mem
+  description: "Memory persistence across sessions"
+  capabilities: [memory]
+  priority: optional
+  install:
+    type: claude_plugin
+    command: "/plugin install claude-mem@claude-plugins-official"

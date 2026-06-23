@@ -1,0 +1,48 @@
+brainstorm:
+  name: Brainstorm
+  description: Idea refinement and design exploration
+  input: user idea (text)
+  output: proposal.md
+  default_provider: superpowers
+
+specification:
+  name: Specification
+  description: Formal requirement spec from proposal
+  input: proposal.md
+  output: specs/<capability>/spec.md
+  default_provider: openspec
+
+planning:
+  name: Planning
+  description: Break spec into implementation tasks
+  input: proposal.md + specs
+  output: tasks.md
+  default_provider: superpowers
+
+implementation:
+  name: Implementation
+  description: Execute tasks with TDD
+  input: tasks.md + specs
+  output: code changes + tests
+  default_provider: builtin
+
+review:
+  name: Review
+  description: Code review against spec
+  input: diff + specs
+  output: review.md
+  default_provider: gstack
+
+release:
+  name: Release
+  description: Ship code (PR, merge, deploy)
+  input: review.md
+  output: PR / merge
+  default_provider: gstack
+
+memory:
+  name: Memory
+  description: Persist context across sessions
+  input: session context
+  output: memory store
+  default_provider: claude-mem

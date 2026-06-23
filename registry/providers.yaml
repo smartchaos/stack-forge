@@ -1,0 +1,23 @@
+superpowers:
+  capabilities: [brainstorm, planning]
+  detect:
+    - type: plugin_installed
+      name: "superpowers"
+
+openspec:
+  capabilities: [specification]
+  detect:
+    - type: cli_installed
+      command: "openspec --version"
+
+gstack:
+  capabilities: [review, release]
+  detect:
+    - type: skill_exists
+      path: "~/.claude/skills/gstack/"
+
+claude-mem:
+  capabilities: [memory]
+  detect:
+    - type: mcp_server_configured
+      name: "claude-mem"
