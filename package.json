@@ -1,0 +1,26 @@
+{
+  "name": "cforge",
+  "version": "0.1.0",
+  "description": "Claude Code workflow orchestration engine",
+  "type": "module",
+  "bin": {
+    "cforge": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "fs-extra": "^11.3.5",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^26.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}
