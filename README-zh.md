@@ -12,12 +12,13 @@ Stack Forge 自动发现你已安装的 Claude Code 插件（Superpowers、OpenS
 # 安装
 npm install -g cforge
 
-# 在项目中初始化
+# 初始化（零配置）
 cforge init
 
 # 启动工作流
-# 在 Claude Code 中执行：
-/workflow feature "添加用户认证"
+cforge                    # 默认：feature
+cforge feature "添加认证"  # 显式指定
+cforge bugfix "修复登录"  # 显式指定
 ```
 
 ## 工作原理
@@ -32,10 +33,11 @@ cforge init
 
 | 命令 | 说明 |
 |---------|-------------|
-| `cforge init` | 在当前项目中初始化 Stack Forge |
+| `cforge init` | 初始化 Stack Forge（零配置） |
+| `cforge [workflow] [desc]` | 启动或继续工作流 |
 | `cforge status` | 查看当前工作流状态 |
-| `cforge update` | 重新扫描 Provider 并更新配置 |
-| `cforge generate` | 重新生成所有配置文件 |
+| `cforge update` | 重新扫描 Provider |
+| `cforge generate` | 重新生成配置文件 |
 
 ## 支持的 Provider
 

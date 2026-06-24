@@ -12,12 +12,13 @@ Stack Forge discovers your installed Claude Code plugins (Superpowers, OpenSpec,
 # Install
 npm install -g cforge
 
-# Initialize in your project
+# Initialize (zero-config)
 cforge init
 
 # Start a workflow
-# In Claude Code:
-/workflow feature "add user authentication"
+cforge                    # default: feature
+cforge feature "add auth" # explicit
+cforge bugfix "fix login" # explicit
 ```
 
 ## How it works
@@ -32,10 +33,11 @@ cforge init
 
 | Command | Description |
 |---------|-------------|
-| `cforge init` | Initialize Stack Forge in the current project |
+| `cforge init` | Initialize Stack Forge (zero-config) |
+| `cforge [workflow] [desc]` | Start or continue a workflow |
 | `cforge status` | Show current workflow status |
-| `cforge update` | Re-scan providers and update configuration |
-| `cforge generate` | Regenerate all config files |
+| `cforge update` | Re-scan providers |
+| `cforge generate` | Regenerate config files |
 
 ## Supported Providers
 
