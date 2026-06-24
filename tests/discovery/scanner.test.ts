@@ -41,10 +41,17 @@ describe("scanner", () => {
 });
 
 describe("scanForPlugins error handling", () => {
-  const testDir = join(tmpdir(), "cforge-scanner-test");
+  const testDir = join(tmpdir(), "cforge-test-scanner");
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true });
+  });
 
   it("handles malformed claude.json gracefully", async () => {
-    await mkdir(testDir, { recursive: true });
     await writeFile(join(testDir, "malformed.json"), "{ invalid json");
 
     const result = await scanForPlugins({
@@ -52,11 +59,12 @@ describe("scanForPlugins error handling", () => {
     });
 
     expect(result.plugins).toEqual([]);
-    await rm(testDir, { recursive: true, force: true });
+    expect(result.errors).toBeDefined();
+    expect(result.errors!.length).toBeGreaterThan(0);
+    expect(result.errors![0]).toContain("malformed.json");
   });
 
   it("handles malformed mcp.json gracefully", async () => {
-    await mkdir(testDir, { recursive: true });
     await writeFile(join(testDir, "malformed.json"), "{ invalid json");
 
     const result = await scanForPlugins({
@@ -64,6 +72,8 @@ describe("scanForPlugins error handling", () => {
     });
 
     expect(result.mcp_servers).toEqual([]);
-    await rm(testDir, { recursive: true, force: true });
+    expect(result.errors).toBeDefined();
+    expect(result.errors!.length).toBeGreaterThan(0);
+    expect(result.errors![0]).toContain("malformed.json");
   });
 });

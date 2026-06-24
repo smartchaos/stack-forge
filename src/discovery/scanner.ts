@@ -7,6 +7,7 @@ export interface ScanResult {
   plugins: string[];
   mcp_servers: string[];
   cli_commands: string[];
+  errors?: string[];
 }
 
 export interface ScanOptions {
@@ -70,7 +71,7 @@ async function scanMcpServers(mcpJson: string): Promise<{ mcp_servers: string[];
 
 export async function scanForPlugins(
   options: ScanOptions = {}
-): Promise<ScanResult & { errors?: string[] }> {
+): Promise<ScanResult> {
   const skillsDir = options.skillsDir || DEFAULT_SKILLS_DIR;
   const claudeJson = options.claudeJson || join(homedir(), ".claude.json");
   const mcpJson = options.mcpJson || join(process.cwd(), ".mcp.json");
