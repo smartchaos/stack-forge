@@ -4,7 +4,12 @@
 
 Stack Forge is a CLI tool that orchestrates Claude Code workflows by discovering installed plugins and generating orchestration skills.
 
+> **Note:** For a high-level overview and quick start, see [README.md](../README.md#architecture).
+
 ## Components
+
+### Entry Point
+- `src/index.ts` - CLI command definitions and program setup
 
 ### CLI Layer (`src/cli/`)
 - `init.ts` - Project initialization
@@ -14,6 +19,15 @@ Stack Forge is a CLI tool that orchestrates Claude Code workflows by discovering
 - `update.ts` - Provider re-scanning
 - `generate.ts` - Config regeneration
 - `validate.ts` - Requirement validation
+
+### Core Modules
+- `src/logger.ts` - Structured logging with pino
+- `src/schemas/config.ts` - Zod validation schemas
+
+### Type Definitions
+- `src/types/config.ts` - Config and manifest types
+- `src/types/provider.ts` - Provider detection types
+- `src/types/workflow.ts` - Workflow state types
 
 ### Discovery Layer (`src/discovery/`)
 - `scanner.ts` - Plugin detection
@@ -41,15 +55,25 @@ Stack Forge is a CLI tool that orchestrates Claude Code workflows by discovering
 ```
 User runs `cforge init`
     ↓
-Scanner detects installed plugins
+1. Project detection (package.json, git remote, directory name)
     ↓
-Matcher maps plugins to capabilities
+2. Plugin scanning (skill_dirs, plugins, mcp_servers)
     ↓
-Generator creates skill files
+3. Provider matching (scan results → provider definitions)
     ↓
-State manager creates initial state
+4. Auto-install missing providers (npm, git clone, claude commands)
     ↓
-Health checker validates providers
+5. Health check (verify providers are working)
+    ↓
+6. Generate files:
+   - .cforge/config.yaml (provider mapping)
+   - .cforge/providers.yaml (detected providers)
+   - .cforge/state.json (initial workflow state)
+   - .cforge/health.json (health records)
+   - .claude/skills/workflow-orchestrator/SKILL.md
+   - .claude/skills/workflow-orchestrator/stages/*.md
+   - .claude/commands/cforge.md
+   - CLAUDE.md (updated with Stack Forge section)
     ↓
 Ready for workflow execution
 ```
