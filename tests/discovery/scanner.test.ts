@@ -39,3 +39,31 @@ describe("scanner", () => {
     expect(results.plugins).toEqual([]);
   });
 });
+
+describe("scanForPlugins error handling", () => {
+  const testDir = join(tmpdir(), "cforge-scanner-test");
+
+  it("handles malformed claude.json gracefully", async () => {
+    await mkdir(testDir, { recursive: true });
+    await writeFile(join(testDir, "malformed.json"), "{ invalid json");
+
+    const result = await scanForPlugins({
+      claudeJson: join(testDir, "malformed.json"),
+    });
+
+    expect(result.plugins).toEqual([]);
+    await rm(testDir, { recursive: true, force: true });
+  });
+
+  it("handles malformed mcp.json gracefully", async () => {
+    await mkdir(testDir, { recursive: true });
+    await writeFile(join(testDir, "malformed.json"), "{ invalid json");
+
+    const result = await scanForPlugins({
+      mcpJson: join(testDir, "malformed.json"),
+    });
+
+    expect(result.mcp_servers).toEqual([]);
+    await rm(testDir, { recursive: true, force: true });
+  });
+});

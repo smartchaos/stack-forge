@@ -32,42 +32,64 @@ async function scanSkillDirs(skillsDir: string): Promise<string[]> {
   return entries.filter((e) => e.isDirectory()).map((e) => e.name);
 }
 
-async function scanPlugins(claudeJson: string): Promise<string[]> {
-  if (!(await exists(claudeJson))) return [];
+async function scanPlugins(claudeJson: string): Promise<{ plugins: string[]; error?: string }> {
+  if (!(await exists(claudeJson))) return { plugins: [] };
   try {
     const content = await readFile(claudeJson, "utf-8");
     const data = JSON.parse(content);
     if (Array.isArray(data.plugins)) {
-      return data.plugins.map((p: string) => p.split("@")[0].split("/").pop() || p);
+      return {
+        plugins: data.plugins.map((p: string) => p.split("@")[0].split("/").pop() || p),
+      };
     }
-  } catch {}
-  return [];
+    return { plugins: [] };
+  } catch (e) {
+    return {
+      plugins: [],
+      error: `Failed to parse ${claudeJson}: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
 }
 
-async function scanMcpServers(mcpJson: string): Promise<string[]> {
-  if (!(await exists(mcpJson))) return [];
+async function scanMcpServers(mcpJson: string): Promise<{ mcp_servers: string[]; error?: string }> {
+  if (!(await exists(mcpJson))) return { mcp_servers: [] };
   try {
     const content = await readFile(mcpJson, "utf-8");
     const data = JSON.parse(content);
     if (data.mcpServers) {
-      return Object.keys(data.mcpServers);
+      return { mcp_servers: Object.keys(data.mcpServers) };
     }
-  } catch {}
-  return [];
+    return { mcp_servers: [] };
+  } catch (e) {
+    return {
+      mcp_servers: [],
+      error: `Failed to parse ${mcpJson}: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
 }
 
 export async function scanForPlugins(
   options: ScanOptions = {}
-): Promise<ScanResult> {
+): Promise<ScanResult & { errors?: string[] }> {
   const skillsDir = options.skillsDir || DEFAULT_SKILLS_DIR;
   const claudeJson = options.claudeJson || join(homedir(), ".claude.json");
   const mcpJson = options.mcpJson || join(process.cwd(), ".mcp.json");
 
-  const [skill_dirs, plugins, mcp_servers] = await Promise.all([
+  const [skill_dirs, pluginsResult, mcpResult] = await Promise.all([
     scanSkillDirs(skillsDir),
     scanPlugins(claudeJson),
     scanMcpServers(mcpJson),
   ]);
 
-  return { skill_dirs, plugins, mcp_servers, cli_commands: [] };
+  const errors: string[] = [];
+  if (pluginsResult.error) errors.push(pluginsResult.error);
+  if (mcpResult.error) errors.push(mcpResult.error);
+
+  return {
+    skill_dirs,
+    plugins: pluginsResult.plugins,
+    mcp_servers: mcpResult.mcp_servers,
+    cli_commands: [],
+    errors: errors.length > 0 ? errors : undefined,
+  };
 }
