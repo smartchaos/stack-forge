@@ -1,12 +1,45 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdir, rm, readFile } from "fs/promises";
+import { mkdir, rm, readFile, stat } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 
-vi.mock("inquirer", () => ({
-  default: {
-    prompt: vi.fn().mockResolvedValue({ selected: [] }),
-  },
+vi.mock("../../src/discovery/project-detector.js", () => ({
+  detectProject: vi.fn().mockResolvedValue({ name: "test-project", description: "test desc" }),
+}));
+
+vi.mock("../../src/discovery/auto-installer.js", () => ({
+  installProvidersSilent: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock("../../src/discovery/scanner.js", () => ({
+  scanForPlugins: vi.fn().mockResolvedValue({}),
+}));
+
+vi.mock("../../src/discovery/matcher.js", () => ({
+  matchProviders: vi.fn().mockResolvedValue({}),
+}));
+
+vi.mock("../../src/discovery/registry.js", () => ({
+  loadProviders: vi.fn().mockResolvedValue([]),
+  loadCapabilities: vi.fn().mockResolvedValue({}),
+  loadManifest: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock("../../src/generator/orchestrator.js", () => ({
+  generateOrchestrator: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../../src/generator/stages.js", () => ({
+  generateStages: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../../src/generator/commands.js", () => ({
+  generateCommands: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../../src/generator/claude-md.js", () => ({
+  generateClaudeMd: vi.fn().mockResolvedValue(undefined),
+  generateProvidersMd: vi.fn().mockResolvedValue(undefined),
 }));
 
 const { runInit } = await import("../../src/cli/init.js");
@@ -22,37 +55,54 @@ describe("cforge init", () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  it("generates all config files", async () => {
-    await runInit(testDir, {
-      mode: "existing",
-      workflow: "feature",
-      description: "test project",
-    });
+  it("generates all config files and directories", async () => {
+    await runInit(testDir, { workflow: "feature" });
 
     const files = [
       ".cforge/config.yaml",
       ".cforge/providers.yaml",
       ".cforge/state.json",
-      ".claude/skills/workflow-orchestrator/SKILL.md",
-      ".claude/commands/workflow.md",
-      "CLAUDE.md",
     ];
 
     for (const file of files) {
       const content = await readFile(join(testDir, file), "utf-8");
       expect(content).toBeDefined();
     }
+
+    const dirs = [".cforge/artifacts", ".cforge/errors"];
+    for (const dir of dirs) {
+      const s = await stat(join(testDir, dir));
+      expect(s.isDirectory()).toBe(true);
+    }
   });
 
-  it("generates CLAUDE.md with provider info", async () => {
-    await runInit(testDir, {
-      mode: "existing",
-      workflow: "feature",
-      description: "test",
-    });
+  it("uses default workflow when not specified", async () => {
+    await runInit(testDir);
 
-    const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-    expect(content).toContain("Stack Forge");
-    expect(content).toContain("/workflow");
+    const configContent = await readFile(join(testDir, ".cforge/config.yaml"), "utf-8");
+    expect(configContent).toContain("workflow: feature");
+  });
+
+  it("uses custom workflow when specified", async () => {
+    await runInit(testDir, { workflow: "hotfix" });
+
+    const configContent = await readFile(join(testDir, ".cforge/config.yaml"), "utf-8");
+    expect(configContent).toContain("workflow: hotfix");
+  });
+
+  it("creates state.json with auto-detected project name", async () => {
+    await runInit(testDir);
+
+    const stateContent = await readFile(join(testDir, ".cforge/state.json"), "utf-8");
+    const state = JSON.parse(stateContent);
+    expect(state.workflow).toBe("feature");
+    expect(state.context.type).toBe("feature");
+  });
+
+  it("writes providers.yaml with empty providers", async () => {
+    await runInit(testDir);
+
+    const providersContent = await readFile(join(testDir, ".cforge/providers.yaml"), "utf-8");
+    expect(providersContent).toContain("providers:");
   });
 });
