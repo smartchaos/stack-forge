@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { detectProject } from "../../src/discovery/project-detector.js";
 import { writeFile, mkdir, rm } from "fs/promises";
 import { join } from "path";
@@ -36,5 +36,12 @@ describe("detectProject", () => {
     }));
     const result = await detectProject(TEST_DIR);
     expect(result.name).toBe("pkg-name");
+  });
+
+  it("falls back to directory name for malformed package.json", async () => {
+    await writeFile(join(TEST_DIR, "package.json"), "{ invalid json");
+    const result = await detectProject(TEST_DIR);
+    expect(result.name).toBe(TEST_DIR.split("/").pop());
+    expect(result.description).toBe("");
   });
 });

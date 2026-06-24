@@ -1,6 +1,5 @@
 import { readFile } from "fs/promises";
-import { join } from "path";
-import { basename } from "path";
+import { join, basename } from "path";
 
 export interface ProjectInfo {
   name: string;
