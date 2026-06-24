@@ -1,5 +1,8 @@
-import { execSync } from "child_process";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import type { ManifestEntry } from "../types/config.js";
+
+const execFileAsync = promisify(execFile);
 
 export interface InstallResult {
   provider: string;
@@ -23,7 +26,6 @@ export async function installProviderSilent(entry: ManifestEntry): Promise<Insta
     };
   }
 
-  // Windows not supported for git_clone
   if (entry.install.type === "git_clone" && detectOs() === "windows") {
     return {
       provider: entry.name,
@@ -33,10 +35,18 @@ export async function installProviderSilent(entry: ManifestEntry): Promise<Insta
   }
 
   try {
-    execSync(entry.install.command, { stdio: "pipe" });
+    const parts = entry.install.command.split(" ");
+    const cmd = parts[0];
+    const args = parts.slice(1);
+    await execFileAsync(cmd, args);
+
     if (entry.post_install) {
-      execSync(entry.post_install, { stdio: "pipe" });
+      const postParts = entry.post_install.split(" ");
+      const postCmd = postParts[0];
+      const postArgs = postParts.slice(1);
+      await execFileAsync(postCmd, postArgs);
     }
+
     return { provider: entry.name, status: "installed" };
   } catch {
     return { provider: entry.name, status: "failed" };
