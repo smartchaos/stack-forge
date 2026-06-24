@@ -14,6 +14,7 @@ import { generateCommands } from "../generator/commands.js";
 import { generateClaudeMd, generateProvidersMd } from "../generator/claude-md.js";
 import { StateManager } from "../state/manager.js";
 import { logger } from "../logger.js";
+import { ForgeConfigSchema } from "../schemas/config.js";
 import type { ForgeConfig } from "../types/config.js";
 import type { DetectedProvider } from "../types/provider.js";
 
@@ -135,6 +136,12 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
     stages: { auto_advance: true, pause_on_review: true },
     artifacts: { output_dir: ".cforge/artifacts" },
   };
+
+  const configResult = ForgeConfigSchema.safeParse(config);
+  if (!configResult.success) {
+    logger.error({ errors: configResult.error.issues }, "Invalid config");
+    throw new Error(`Invalid config: ${configResult.error.issues.map(i => i.message).join(", ")}`);
+  }
   await writeFile(join(cforgeDir, "config.yaml"), dumpYaml(config), "utf-8");
 
   // 8. Write providers

@@ -55,4 +55,14 @@ describe("ForgeConfigSchema", () => {
     const result = ForgeConfigSchema.safeParse(config);
     expect(result.success).toBe(true);
   });
+
+  it("rejects invalid config", () => {
+    const config = {
+      workflow: "feature",
+      // missing required fields
+    };
+
+    const result = ForgeConfigSchema.safeParse(config);
+    expect(result.success).toBe(false);
+  });
 });

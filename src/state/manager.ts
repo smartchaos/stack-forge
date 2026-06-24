@@ -3,6 +3,7 @@ import { existsSync } from "fs";
 import { join } from "path";
 import type { WorkflowState, StageName, StageStatus } from "../types/workflow.js";
 import { WorkflowStateSchema } from "../schemas/config.js";
+import { logger } from "../logger.js";
 
 const STAGE_ORDER: StageName[] = [
   "brainstorm",
@@ -12,6 +13,21 @@ const STAGE_ORDER: StageName[] = [
   "review",
   "release",
 ];
+
+function validateState(content: string): WorkflowState | null {
+  try {
+    const parsed = JSON.parse(content);
+    const result = WorkflowStateSchema.safeParse(parsed);
+    if (!result.success) {
+      logger.error({ errors: result.error.issues }, "Invalid state file");
+      return null;
+    }
+    return result.data;
+  } catch (e) {
+    logger.error({ error: e }, "Failed to parse state file");
+    return null;
+  }
+}
 
 function defaultStages(): WorkflowState["stages"] {
   const stages: Record<string, { status: StageStatus; provider: string; artifact: null }> = {};
@@ -53,25 +69,19 @@ export class StateManager {
 
     try {
       const content = await readFile(this.statePath, "utf-8");
-      const parsed = JSON.parse(content);
-      const result = WorkflowStateSchema.safeParse(parsed);
-      if (!result.success) {
-        console.error("Invalid state file:", result.error.issues);
-        return null;
-      }
-      return result.data;
+      return validateState(content);
     } catch (e) {
-      console.error(`Failed to read state file: ${e instanceof Error ? e.message : String(e)}`);
+      logger.error({ error: e }, "Failed to read state file");
       if (existsSync(this.backupPath)) {
         try {
           const content = await readFile(this.backupPath, "utf-8");
-          const parsed = JSON.parse(content);
-          const result = WorkflowStateSchema.safeParse(parsed);
-          if (!result.success) return null;
-          await this.write(result.data);
-          return result.data;
+          const state = validateState(content);
+          if (state) {
+            await this.write(state);
+          }
+          return state;
         } catch (e2) {
-          console.error(`Failed to read backup: ${e2 instanceof Error ? e2.message : String(e2)}`);
+          logger.error({ error: e2 }, "Failed to read backup");
           return null;
         }
       }
