@@ -1,9 +1,25 @@
 import { readFile } from "fs/promises";
 import { join, basename } from "path";
+import { execSync } from "child_process";
 
 export interface ProjectInfo {
   name: string;
   description: string;
+}
+
+function getGitRemoteName(projectDir: string): string | null {
+  try {
+    const url = execSync("git remote get-url origin", {
+      cwd: projectDir,
+      encoding: "utf-8",
+      stdio: "pipe",
+    }).trim();
+    // Extract repo name from URL (handles both SSH and HTTPS)
+    const match = url.match(/\/([^/]+?)(?:\.git)?$/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function detectProject(projectDir: string): Promise<ProjectInfo> {
@@ -17,6 +33,15 @@ export async function detectProject(projectDir: string): Promise<ProjectInfo> {
     };
   } catch {
     // No package.json
+  }
+
+  // Try git remote
+  const gitName = getGitRemoteName(projectDir);
+  if (gitName) {
+    return {
+      name: gitName,
+      description: "",
+    };
   }
 
   // Fallback to directory name
