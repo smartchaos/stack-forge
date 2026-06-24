@@ -4,6 +4,7 @@ import { runInit } from "./cli/init.js";
 import { runStatus } from "./cli/status.js";
 import { runUpdate } from "./cli/update.js";
 import { runGenerate } from "./cli/generate.js";
+import { runWorkflow } from "./cli/run.js";
 
 const program = new Command();
 
@@ -11,6 +12,14 @@ program
   .name("cforge")
   .description("Claude Code workflow orchestration engine")
   .version("0.1.0");
+
+// Default command: cforge [workflow] [description]
+program
+  .argument("[workflow]", "Workflow type (feature, bugfix, etc.)", "feature")
+  .argument("[description]", "Workflow description", "")
+  .action(async (workflow, description) => {
+    await runWorkflow(process.cwd(), { workflow, description });
+  });
 
 program
   .command("init")
