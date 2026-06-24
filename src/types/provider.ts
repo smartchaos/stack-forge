@@ -1,5 +1,6 @@
 export type DetectionType =
   | "skill_exists"
+  | "slash_command"
   | "plugin_installed"
   | "command_exists"
   | "cli_installed"
@@ -12,6 +13,7 @@ export interface DetectionRule {
   match_prefix?: string;
   command?: string;
   name?: string;
+  command_name?: string;
 }
 
 export interface ProviderDefinition {

@@ -30,6 +30,29 @@ cforge bugfix "修复登录"  # 显式指定
 5. `cforge` 触发编排 Skill
 6. 编排 Skill 自动 fork 子 Agent 执行每个阶段
 7. 阶段流程：Brainstorm → Spec → Plan → Build → Review → Release
+8. **实现阶段**支持并行执行独立任务
+
+## 并行实现
+
+实现阶段自动检测独立任务并并行执行：
+
+```markdown
+# tasks.md 示例
+- [ ] Task 1: 修改 src/discovery/scanner.ts
+- [ ] Task 2: 修改 src/generator/templates.ts
+- [ ] Task 3: 修改 src/cli/generate.ts
+- [ ] Task 4: 修改 src/discovery/scanner.ts（依赖 Task 1）
+```
+
+**自动分组：**
+- Task 1, 2, 3 → Batch 1（并行，无文件冲突）
+- Task 4 → Batch 2（串行，依赖 Task 1）
+
+**优势：**
+- 独立任务执行速度提升 3 倍
+- 自动冲突检测
+- 每个任务遵循 TDD 工作流
+- 结束时运行完整测试套件验证
 
 ## 命令
 

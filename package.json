@@ -6,11 +6,39 @@
   "bin": {
     "cforge": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "templates",
+    "registry"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm test",
+    "postpublish": "echo 'Published successfully!'"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "workflow",
+    "orchestration",
+    "ai",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smartchaos/stack-forge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/smartchaos/stack-forge/issues"
+  },
+  "homepage": "https://github.com/smartchaos/stack-forge#readme",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "commander": "^15.0.0",

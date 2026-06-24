@@ -1,0 +1,25 @@
+# Source code (only dist is needed)
+src/
+tests/
+*.ts
+!dist/**/*.js
+
+# Config files
+tsconfig.json
+vitest.config.ts
+.gitignore
+.eslintrc*
+.prettierrc*
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Development files
+node_modules/
+coverage/
+.DS_Store
+*.log
+.cforge/
+codegraph/

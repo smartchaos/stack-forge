@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { generateClaudeMd } from "../../src/generator/claude-md.js";
+import { generateClaudeMd, generateProvidersMd } from "../../src/generator/claude-md.js";
 import { mkdir, rm, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -24,6 +24,7 @@ describe("claude-md generator", () => {
 
   beforeEach(async () => {
     await mkdir(testDir, { recursive: true });
+    await mkdir(join(testDir, ".cforge"), { recursive: true });
   });
 
   afterEach(async () => {
@@ -35,7 +36,7 @@ describe("claude-md generator", () => {
     const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
     expect(content).toContain("## Stack Forge");
     expect(content).toContain("/workflow");
-    expect(content).toContain("Missing Providers");
+    expect(content).toContain("providers.md");
   });
 
   it("does not duplicate Stack Forge section", async () => {
@@ -46,30 +47,30 @@ describe("claude-md generator", () => {
     expect(matches?.length).toBe(1);
   });
 
-  it("shows detected providers", async () => {
+  it("creates providers.md with detected providers", async () => {
     const opts = {
       ...baseOptions,
       detected: {
         superpowers: { name: "superpowers", capabilities: ["brainstorm", "planning"], source: "test", detected_at: "2026-01-01" },
       },
     };
-    await generateClaudeMd(testDir, opts);
-    const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-    expect(content).toContain("Detected Providers");
+    await generateProvidersMd(testDir, opts);
+    const content = await readFile(join(testDir, ".cforge/providers.md"), "utf-8");
+    expect(content).toContain("# Providers");
     expect(content).toContain("superpowers");
     expect(content).toContain("Ready");
   });
 
-  it("shows missing providers with install commands", async () => {
+  it("creates providers.md with missing providers and install commands", async () => {
     const opts = {
       ...baseOptions,
       manifest: [
         { name: "openspec", description: "Spec framework", capabilities: ["specification"], priority: "required" as const, install: { type: "npm" as const, command: "npm install -g openspec" } },
       ],
     };
-    await generateClaudeMd(testDir, opts);
-    const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-    expect(content).toContain("Missing Providers");
+    await generateProvidersMd(testDir, opts);
+    const content = await readFile(join(testDir, ".cforge/providers.md"), "utf-8");
+    expect(content).toContain("## Missing");
     expect(content).toContain("npm install -g openspec");
   });
 });

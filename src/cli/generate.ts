@@ -4,7 +4,7 @@ import { parse as parseYaml } from "yaml";
 import { generateOrchestrator } from "../generator/orchestrator.js";
 import { generateStages } from "../generator/stages.js";
 import { generateCommands } from "../generator/commands.js";
-import { generateClaudeMd } from "../generator/claude-md.js";
+import { generateClaudeMd, generateProvidersMd } from "../generator/claude-md.js";
 import { scanForPlugins } from "../discovery/scanner.js";
 import { matchProviders } from "../discovery/matcher.js";
 import { loadProviders, loadCapabilities, loadManifest } from "../discovery/registry.js";
@@ -51,6 +51,13 @@ export async function runGenerate(projectDir: string): Promise<void> {
   });
 
   await generateClaudeMd(projectDir, {
+    workflowName: config.workflow,
+    detected,
+    manifest,
+    capabilities,
+  });
+
+  await generateProvidersMd(projectDir, {
     workflowName: config.workflow,
     detected,
     manifest,

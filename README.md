@@ -30,6 +30,29 @@ cforge bugfix "fix login" # explicit
 5. `cforge` triggers the orchestration skill
 6. The skill forks subagents for each stage automatically
 7. Stages: Brainstorm → Spec → Plan → Build → Review → Release
+8. **Implementation stage** uses parallel execution for independent tasks
+
+## Parallel Implementation
+
+The Implementation stage automatically detects independent tasks and executes them in parallel:
+
+```markdown
+# tasks.md example
+- [ ] Task 1: Modify src/discovery/scanner.ts
+- [ ] Task 2: Modify src/generator/templates.ts
+- [ ] Task 3: Modify src/cli/generate.ts
+- [ ] Task 4: Modify src/discovery/scanner.ts (depends on Task 1)
+```
+
+**Automatic batching:**
+- Tasks 1, 2, 3 → Batch 1 (parallel, no file conflicts)
+- Task 4 → Batch 2 (serial, depends on Task 1)
+
+**Benefits:**
+- 3x faster for independent tasks
+- Automatic conflict detection
+- Each task follows TDD workflow
+- Full test suite validation at end
 
 ## Commands
 
