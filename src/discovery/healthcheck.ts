@@ -91,22 +91,24 @@ export async function runHealthCheck(
   const results: HealthCheckResult[] = [];
 
   for (const [provider, rule] of Object.entries(healthRules)) {
-    const checks = rule.checks.map((c) => {
-      let passed: boolean;
-      switch (c.type) {
-        case "plugin_installed":
-        case "skill_exists":
-        case "mcp_server_configured":
-          passed = checkRule(c, scan);
-          break;
-        case "skill_file_exists":
-          passed = c.path ? false : true;
-          break;
-        default:
-          passed = false;
-      }
-      return { type: c.type, passed };
-    });
+    const checks = await Promise.all(
+      rule.checks.map(async (c) => {
+        let passed: boolean;
+        switch (c.type) {
+          case "plugin_installed":
+          case "skill_exists":
+          case "mcp_server_configured":
+            passed = checkRule(c, scan);
+            break;
+          case "skill_file_exists":
+            passed = c.path ? await checkSkillFileExists(c.path) : false;
+            break;
+          default:
+            passed = false;
+        }
+        return { type: c.type, passed };
+      })
+    );
 
     const allPassed = checks.every((c) => c.passed);
     const status: HealthStatus = allPassed ? "healthy" : "missing";
