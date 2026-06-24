@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { readFile, writeFile, mkdir, copyFile } from "fs/promises";
 import { existsSync } from "fs";
 import { join } from "path";
 import type { WorkflowState, StageName, StageStatus } from "../types/workflow.js";
@@ -22,9 +22,11 @@ function defaultStages(): WorkflowState["stages"] {
 
 export class StateManager {
   private statePath: string;
+  private backupPath: string;
 
   constructor(private dir: string) {
     this.statePath = join(dir, "state.json");
+    this.backupPath = join(dir, "state.json.bak");
   }
 
   async create(workflow: string, projectName: string, description: string): Promise<WorkflowState> {
@@ -47,11 +49,32 @@ export class StateManager {
 
   async read(): Promise<WorkflowState | null> {
     if (!existsSync(this.statePath)) return null;
-    const content = await readFile(this.statePath, "utf-8");
-    return JSON.parse(content) as WorkflowState;
+
+    try {
+      const content = await readFile(this.statePath, "utf-8");
+      return JSON.parse(content) as WorkflowState;
+    } catch {
+      if (existsSync(this.backupPath)) {
+        try {
+          const content = await readFile(this.backupPath, "utf-8");
+          const state = JSON.parse(content) as WorkflowState;
+          await this.write(state);
+          return state;
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }
   }
 
   async write(state: WorkflowState): Promise<void> {
+    await mkdir(this.dir, { recursive: true });
+
+    if (existsSync(this.statePath)) {
+      await copyFile(this.statePath, this.backupPath);
+    }
+
     state.updated_at = new Date().toISOString();
     await writeFile(this.statePath, JSON.stringify(state, null, 2), "utf-8");
   }
