@@ -4,7 +4,7 @@
 
 ## 简介
 
-Stack Forge 自动发现你已安装的 Claude Code 插件（Superpowers、OpenSpec、gstack 等），生成编排工作流，将它们串联起来自动执行。
+Stack Forge 自动发现你已安装的 Claude Code 插件（Superpowers、feature-dev、code-review 等），生成编排工作流，将它们串联起来自动执行。包含健康检查机制，确保 Provider 在工作流启动前正常工作。
 
 ## 快速开始
 
@@ -24,10 +24,12 @@ cforge bugfix "修复登录"  # 显式指定
 ## 工作原理
 
 1. `cforge init` 扫描系统中已安装的插件
-2. 生成编排 Skill + 各阶段 Stage Skill
-3. `cforge` 触发编排 Skill
-4. 编排 Skill 自动 fork 子 Agent 执行每个阶段
-5. 阶段流程：Brainstorm → Spec → Plan → Build → Review → Release
+2. 自动安装缺失的必要 Provider
+3. 运行健康检查验证 Provider 是否正常工作
+4. 生成编排 Skill + 各阶段 Stage Skill
+5. `cforge` 触发编排 Skill
+6. 编排 Skill 自动 fork 子 Agent 执行每个阶段
+7. 阶段流程：Brainstorm → Spec → Plan → Build → Review → Release
 
 ## 命令
 
@@ -36,18 +38,28 @@ cforge bugfix "修复登录"  # 显式指定
 | `cforge init` | 初始化 Stack Forge（零配置） |
 | `cforge [workflow] [desc]` | 启动或继续工作流 |
 | `cforge status` | 查看当前工作流状态 |
+| `cforge healthcheck` | 检查已安装 Provider 的健康状态 |
 | `cforge update` | 重新扫描 Provider 并更新配置 |
 | `cforge generate` | 重新生成所有配置文件 |
+| `cforge validate` | 验证实现是否符合规格要求 |
+
+## 调试模式
+
+设置环境变量启用详细日志：
+
+```bash
+CFORGE_LOG_LEVEL=debug cforge <command>
+```
 
 ## 支持的 Provider
 
 | 能力 | 默认 Provider |
 |------------|-----------------|
 | 头脑风暴 (Brainstorm) | Superpowers |
-| 规格说明 (Specification) | OpenSpec |
+| 规格说明 (Specification) | feature-dev |
 | 计划 (Planning) | Superpowers |
 | 实现 (Implementation) | 内置 |
-| 代码审查 (Review) | gstack |
+| 代码审查 (Review) | code-review |
 | 发布 (Release) | gstack |
 | 记忆 (Memory) | claude-mem |
 
@@ -56,16 +68,19 @@ cforge bugfix "修复登录"  # 显式指定
 ```
 cforge CLI
   ├── Provider 发现 (扫描已安装插件)
+  ├── 健康检查 (验证 Provider)
   ├── 配置生成器 (生成 Skill、Command、CLAUDE.md)
-  └── 状态管理 (state.json)
+  ├── Schema 验证 (Zod)
+  └── 状态管理 (state.json + 备份恢复)
 
 Claude Code 运行时
   ├── 编排 Skill (状态机 + fork 子 Agent)
   │   └── 阶段 Skills (context: fork 隔离)
   └── Provider 委托
       ├── Superpowers (头脑风暴、计划)
-      ├── OpenSpec (规格说明)
-      └── gstack (代码审查、发布)
+      ├── feature-dev (规格说明)
+      ├── code-review (代码审查)
+      └── gstack (发布)
 ```
 
 ## 许可证
