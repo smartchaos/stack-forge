@@ -7,6 +7,7 @@ import { matchProviders } from "../discovery/matcher.js";
 import { loadProviders, loadCapabilities, loadManifest } from "../discovery/registry.js";
 import { detectProject } from "../discovery/project-detector.js";
 import { installProvidersSilent } from "../discovery/auto-installer.js";
+import { runHealthCheck, writeHealthRecord, mergeHealthWithRecord } from "../discovery/healthcheck.js";
 import { generateOrchestrator } from "../generator/orchestrator.js";
 import { generateStages } from "../generator/stages.js";
 import { generateCommands } from "../generator/commands.js";
@@ -99,6 +100,17 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
     if (skipped.length > 0) {
       console.log(`Skipped: ${skipped.map((r) => r.provider).join(", ")}`);
     }
+  }
+
+  // 5b. Run healthcheck
+  const healthResults = await runHealthCheck(scanResult);
+  const healthRecord = mergeHealthWithRecord(healthResults, null);
+  await writeHealthRecord(cforgeDir, healthRecord);
+  const missingCritical = healthResults
+    .filter((r) => r.critical && r.status !== "healthy")
+    .map((r) => r.provider);
+  if (missingCritical.length > 0) {
+    console.log(`\nWarning: critical providers missing: ${missingCritical.join(", ")}`);
   }
 
   // 6. Build provider mapping

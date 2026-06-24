@@ -5,6 +5,7 @@ import { runStatus } from "./cli/status.js";
 import { runUpdate } from "./cli/update.js";
 import { runGenerate } from "./cli/generate.js";
 import { runWorkflow } from "./cli/run.js";
+import { runHealthcheck } from "./cli/healthcheck.js";
 
 const program = new Command();
 
@@ -48,6 +49,14 @@ program
   .description("Regenerate all config files")
   .action(async () => {
     await runGenerate(process.cwd());
+  });
+
+program
+  .command("healthcheck")
+  .description("Check health of installed providers")
+  .option("--verbose", "Show detailed output")
+  .action(async (opts) => {
+    await runHealthcheck(process.cwd(), { verbose: opts.verbose });
   });
 
 program.parse();

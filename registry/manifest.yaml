@@ -6,18 +6,25 @@
     type: claude_command
     command: "/plugin install superpowers@claude-plugins-official"
 
-- name: openspec
-  description: "Spec-driven development framework"
+- name: feature-dev
+  description: "Structured feature development with codebase exploration and architecture design"
   capabilities: [specification]
   priority: required
   install:
-    type: npm
-    command: "npm install -g @fission-ai/openspec@latest"
-  post_install: "openspec init"
+    type: claude_command
+    command: "/plugin install feature-dev@claude-plugins-official"
+
+- name: code-review
+  description: "Multi-agent PR review with confidence-based scoring"
+  capabilities: [review]
+  priority: required
+  install:
+    type: claude_command
+    command: "/plugin install code-review@claude-plugins-official"
 
 - name: gstack
-  description: "Code review, QA, shipping skills"
-  capabilities: [review, release]
+  description: "Shipping skills (PR, merge, deploy)"
+  capabilities: [release]
   priority: recommended
   install:
     type: git_clone

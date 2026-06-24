@@ -1,5 +1,6 @@
 import { join } from "path";
 import { StateManager } from "../state/manager.js";
+import { runLightweightHealthcheck } from "./healthcheck.js";
 
 export interface RunOptions {
   workflow?: string;
@@ -31,6 +32,13 @@ export async function runWorkflow(
 
   if (options.description) {
     state.context.description = options.description;
+  }
+
+  // Pre-flight healthcheck
+  const health = await runLightweightHealthcheck(projectDir);
+  if (!health.healthy) {
+    console.warn(`\nWarning: missing critical providers: ${health.missingCritical.join(", ")}`);
+    console.warn("Pipeline may not work correctly. Run `cforge init` to reinstall.\n");
   }
 
   await stateManager.write(state);

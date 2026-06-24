@@ -1,31 +1,31 @@
 superpowers:
-  capabilities: [brainstorm, planning]
-  detect:
+  checks:
     - type: plugin_installed
       name: "superpowers"
+    - type: skill_exists
+      path: "~/.claude/skills/superpowers/"
+  critical: true
 
 feature-dev:
-  capabilities: [specification]
-  detect:
+  checks:
     - type: plugin_installed
       name: "feature-dev"
+  critical: true
 
 code-review:
-  capabilities: [review]
-  detect:
+  checks:
     - type: plugin_installed
       name: "code-review"
+  critical: true
 
 gstack:
-  capabilities: [release]
-  detect:
-    - type: slash_command
-      command_name: "gstack"
+  checks:
     - type: skill_exists
       path: "~/.claude/skills/gstack/"
+  critical: false
 
 claude-mem:
-  capabilities: [memory]
-  detect:
+  checks:
     - type: mcp_server_configured
       name: "claude-mem"
+  critical: false

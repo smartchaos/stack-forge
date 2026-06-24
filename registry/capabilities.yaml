@@ -10,7 +10,7 @@ specification:
   description: Formal requirement spec from proposal
   input: proposal.md
   output: specs/<capability>/spec.md
-  default_provider: openspec
+  default_provider: feature-dev
 
 planning:
   name: Planning
@@ -31,7 +31,7 @@ review:
   description: Code review against spec
   input: diff + specs
   output: review.md
-  default_provider: gstack
+  default_provider: code-review
 
 release:
   name: Release
