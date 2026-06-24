@@ -6,6 +6,7 @@ import { runUpdate } from "./cli/update.js";
 import { runGenerate } from "./cli/generate.js";
 import { runWorkflow } from "./cli/run.js";
 import { runHealthcheck } from "./cli/healthcheck.js";
+import { runValidate } from "./cli/validate.js";
 
 const program = new Command();
 
@@ -57,6 +58,14 @@ program
   .option("--verbose", "Show detailed output")
   .action(async (opts) => {
     await runHealthcheck(process.cwd(), { verbose: opts.verbose });
+  });
+
+program
+  .command("validate")
+  .description("Validate implementation against spec requirements")
+  .action(async () => {
+    const { allPassed } = await runValidate();
+    if (!allPassed) process.exit(1);
   });
 
 program.parse();

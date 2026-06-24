@@ -1,0 +1,168 @@
+requirements:
+  # Part 1: Plugin Curation - Provider Matrix
+  - id: REQ-001
+    description: "providers.yaml must define feature-dev provider"
+    type: file_content
+    file: registry/providers.yaml
+    pattern: "feature-dev:"
+    critical: true
+
+  - id: REQ-002
+    description: "providers.yaml must define code-review provider"
+    type: file_content
+    file: registry/providers.yaml
+    pattern: "code-review:"
+    critical: true
+
+  - id: REQ-003
+    description: "providers.yaml must NOT define openspec"
+    type: file_absent
+    file: registry/providers.yaml
+    pattern: "openspec:"
+    critical: true
+
+  - id: REQ-004
+    description: "capabilities.yaml default_provider for specification must be feature-dev"
+    type: file_content
+    file: registry/capabilities.yaml
+    pattern: "default_provider: feature-dev"
+    critical: true
+
+  - id: REQ-005
+    description: "capabilities.yaml default_provider for review must be code-review"
+    type: file_content
+    file: registry/capabilities.yaml
+    pattern: "default_provider: code-review"
+    critical: true
+
+  - id: REQ-006
+    description: "gstack capabilities must be scoped to release only"
+    type: file_content
+    file: registry/providers.yaml
+    pattern: "capabilities: [release]"
+    critical: true
+
+  - id: REQ-007
+    description: "manifest.yaml must include feature-dev install command"
+    type: file_content
+    file: registry/manifest.yaml
+    pattern: "feature-dev@claude-plugins-official"
+    critical: true
+
+  - id: REQ-008
+    description: "manifest.yaml must include code-review install command"
+    type: file_content
+    file: registry/manifest.yaml
+    pattern: "code-review@claude-plugins-official"
+    critical: true
+
+  - id: REQ-009
+    description: "manifest.yaml must NOT include openspec"
+    type: file_absent
+    file: registry/manifest.yaml
+    pattern: "openspec"
+    critical: true
+
+  # Part 2: Health Check System
+  - id: REQ-010
+    description: "health-rules.yaml must exist"
+    type: file_exists
+    file: registry/health-rules.yaml
+    critical: true
+
+  - id: REQ-011
+    description: "health-rules.yaml must define superpowers with critical: true"
+    type: file_content
+    file: registry/health-rules.yaml
+    pattern: "critical: true"
+    critical: true
+
+  - id: REQ-012
+    description: "healthcheck.ts must export runHealthCheck"
+    type: export_exists
+    file: src/discovery/healthcheck.ts
+    symbol: "runHealthCheck"
+    critical: true
+
+  - id: REQ-013
+    description: "healthcheck.ts must export readHealthRecord"
+    type: export_exists
+    file: src/discovery/healthcheck.ts
+    symbol: "readHealthRecord"
+    critical: true
+
+  - id: REQ-014
+    description: "healthcheck.ts must export writeHealthRecord"
+    type: export_exists
+    file: src/discovery/healthcheck.ts
+    symbol: "writeHealthRecord"
+    critical: true
+
+  - id: REQ-015
+    description: "healthcheck.ts must export mergeHealthWithRecord"
+    type: export_exists
+    file: src/discovery/healthcheck.ts
+    symbol: "mergeHealthWithRecord"
+    critical: true
+
+  - id: REQ-016
+    description: "healthcheck.ts must export checkStaleness"
+    type: export_exists
+    file: src/discovery/healthcheck.ts
+    symbol: "checkStaleness"
+    critical: true
+
+  - id: REQ-017
+    description: "healthcheck CLI must export runHealthcheck"
+    type: export_exists
+    file: src/cli/healthcheck.ts
+    symbol: "runHealthcheck"
+    critical: true
+
+  - id: REQ-018
+    description: "healthcheck CLI must export runLightweightHealthcheck"
+    type: export_exists
+    file: src/cli/healthcheck.ts
+    symbol: "runLightweightHealthcheck"
+    critical: true
+
+  - id: REQ-019
+    description: "healthcheck command must be registered in index.ts"
+    type: file_content
+    file: src/index.ts
+    pattern: "healthcheck"
+    critical: true
+
+  - id: REQ-020
+    description: "init.ts must call runHealthCheck after scanning"
+    type: file_content
+    file: src/cli/init.ts
+    pattern: "runHealthCheck"
+    critical: true
+
+  - id: REQ-021
+    description: "run.ts must call runLightweightHealthcheck before pipeline"
+    type: file_content
+    file: src/cli/run.ts
+    pattern: "runLightweightHealthcheck"
+    critical: true
+
+  - id: REQ-022
+    description: "healthcheck.ts must handle missing scan arrays gracefully"
+    type: file_content
+    file: src/discovery/healthcheck.ts
+    pattern: "(scan.plugins || [])"
+    critical: true
+
+  # Source Files Completeness
+  - id: REQ-023
+    description: "src/discovery/healthcheck.ts must exist"
+    type: file_exists
+    file: src/discovery/healthcheck.ts
+    critical: true
+
+  - id: REQ-024
+    description: "src/cli/healthcheck.ts must exist"
+    type: file_exists
+    file: src/cli/healthcheck.ts
+    critical: true
