@@ -97,6 +97,7 @@ describe("cforge init", () => {
     const state = JSON.parse(stateContent);
     expect(state.workflow).toBe("feature");
     expect(state.context.type).toBe("feature");
+    expect(state.context.project_name).toBe("test-project");
   });
 
   it("writes providers.yaml with empty providers", async () => {

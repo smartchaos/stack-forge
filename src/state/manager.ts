@@ -27,7 +27,7 @@ export class StateManager {
     this.statePath = join(dir, "state.json");
   }
 
-  async create(workflow: string, description: string): Promise<WorkflowState> {
+  async create(workflow: string, projectName: string, description: string): Promise<WorkflowState> {
     await mkdir(this.dir, { recursive: true });
 
     const state: WorkflowState = {
@@ -37,7 +37,7 @@ export class StateManager {
       updated_at: new Date().toISOString(),
       current_stage: "brainstorm",
       status: "in_progress",
-      context: { type: workflow, description },
+      context: { type: workflow, project_name: projectName, description },
       stages: defaultStages(),
     };
 

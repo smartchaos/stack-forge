@@ -126,7 +126,7 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
 
   // 9. Create state
   const stateManager = new StateManager(cforgeDir);
-  await stateManager.create(workflow, projectInfo.description);
+  await stateManager.create(workflow, projectInfo.name, projectInfo.description);
 
   // 10. Create directories
   await mkdir(join(cforgeDir, "artifacts"), { recursive: true });

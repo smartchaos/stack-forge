@@ -18,22 +18,23 @@ describe("StateManager", () => {
   });
 
   it("creates initial state", async () => {
-    const state = await manager.create("feature", "add auth");
+    const state = await manager.create("feature", "my-project", "add auth");
     expect(state.workflow).toBe("feature");
     expect(state.status).toBe("in_progress");
     expect(state.current_stage).toBe("brainstorm");
+    expect(state.context.project_name).toBe("my-project");
     expect(state.context.description).toBe("add auth");
   });
 
   it("reads existing state", async () => {
-    await manager.create("feature", "add auth");
+    await manager.create("feature", "my-project", "add auth");
     const loaded = await manager.read();
     expect(loaded).toBeDefined();
     expect(loaded!.workflow).toBe("feature");
   });
 
   it("transitions stage", async () => {
-    await manager.create("feature", "add auth");
+    await manager.create("feature", "my-project", "add auth");
     await manager.completeStage("brainstorm");
     const state = await manager.read();
     expect(state!.stages.brainstorm.status).toBe("completed");

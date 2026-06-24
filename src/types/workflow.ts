@@ -19,6 +19,7 @@ export interface StageState {
 
 export interface WorkflowContext {
   type: string;
+  project_name: string;
   description: string;
   branch?: string;
 }
