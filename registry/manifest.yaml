@@ -3,7 +3,7 @@
   capabilities: [brainstorm, planning]
   priority: required
   install:
-    type: claude_plugin
+    type: claude_command
     command: "/plugin install superpowers@claude-plugins-official"
 
 - name: openspec
@@ -28,5 +28,5 @@
   capabilities: [memory]
   priority: optional
   install:
-    type: claude_plugin
+    type: claude_command
     command: "/plugin install claude-mem@claude-plugins-official"

@@ -19,7 +19,7 @@ export interface ManifestEntry {
   capabilities: string[];
   priority: "required" | "recommended" | "optional";
   install: {
-    type: "npm" | "claude_plugin" | "git_clone" | "cli";
+    type: "npm" | "claude_plugin" | "git_clone" | "cli" | "claude_command";
     command: string;
   };
   post_install?: string;
