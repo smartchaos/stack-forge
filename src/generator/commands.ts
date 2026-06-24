@@ -14,11 +14,11 @@ export async function generateCommands(
   const commandsDir = join(projectDir, ".claude/commands");
   await mkdir(commandsDir, { recursive: true });
 
-  const template = await loadTemplate("commands/workflow.md");
+  const template = await loadTemplate("commands/cforge.md");
   const rendered = renderTemplate(template, {
     workflow_name: options.workflowName,
     description: options.description || "",
   });
 
-  await writeFile(join(commandsDir, "workflow.md"), rendered, "utf-8");
+  await writeFile(join(commandsDir, "cforge.md"), rendered, "utf-8");
 }

@@ -1,5 +1,5 @@
 ---
-description: "Start or continue the {{workflow_name}} workflow"
+description: "Run the {{workflow_name}} workflow"
 allowed-tools:
   - Bash
   - Read
@@ -11,6 +11,6 @@ allowed-tools:
 
 # Workflow: {{workflow_name}}
 
-Starting new workflow with: {{description}}
+Starting workflow: {{description}}
 
 Run the workflow orchestrator skill to begin.

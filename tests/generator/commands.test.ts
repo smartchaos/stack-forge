@@ -15,13 +15,13 @@ describe("commands generator", () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  it("generates workflow command", async () => {
+  it("generates cforge command", async () => {
     await generateCommands(testDir, {
       workflowName: "feature",
       description: "add auth",
     });
 
-    const content = await readFile(join(testDir, ".claude/commands/workflow.md"), "utf-8");
+    const content = await readFile(join(testDir, ".claude/commands/cforge.md"), "utf-8");
     expect(content).toContain("feature");
     expect(content).toContain("add auth");
   });
