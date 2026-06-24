@@ -13,6 +13,7 @@ import { generateStages } from "../generator/stages.js";
 import { generateCommands } from "../generator/commands.js";
 import { generateClaudeMd, generateProvidersMd } from "../generator/claude-md.js";
 import { StateManager } from "../state/manager.js";
+import { logger } from "../logger.js";
 import type { ForgeConfig } from "../types/config.js";
 import type { DetectedProvider } from "../types/provider.js";
 
@@ -42,11 +43,13 @@ async function loadExistingProviders(cforgeDir: string): Promise<Record<string, 
 }
 
 export async function runInit(projectDir: string, options: InitOptions = {}): Promise<void> {
+  logger.info("Initializing Stack Forge...");
   const cforgeDir = join(projectDir, ".cforge");
   await mkdir(cforgeDir, { recursive: true });
 
   // 1. Auto-detect project info
   const projectInfo = await detectProject(projectDir);
+  logger.info({ project: projectInfo.name }, "Detected project");
   const workflow = options.workflow || "feature";
 
   // 2. Load previously installed providers
@@ -62,6 +65,7 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
   for (const [name, provider] of Object.entries(scannedProviders)) {
     detected[name] = provider;
   }
+  logger.info({ providers: Object.keys(detected) }, "Detected providers");
 
   // 5. Load manifest and auto-install missing required/recommended
   const manifest = await loadManifest();
@@ -183,4 +187,5 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
   console.log(`\nStack Forge initialized.`);
   console.log(`Detected: ${detectedNames.join(", ") || "none"}`);
   console.log(`Ready. Run: cforge`);
+  logger.info("Stack Forge initialized.");
 }

@@ -7,6 +7,7 @@ import { runGenerate } from "./cli/generate.js";
 import { runWorkflow } from "./cli/run.js";
 import { runHealthcheck } from "./cli/healthcheck.js";
 import { runValidate } from "./cli/validate.js";
+import { logger } from "./logger.js";
 
 const program = new Command();
 
@@ -20,6 +21,7 @@ program
   .argument("[workflow]", "Workflow type (feature, bugfix, etc.)", "feature")
   .argument("[description]", "Workflow description", "")
   .action(async (workflow, description) => {
+    logger.debug({ workflow, description }, "Starting workflow");
     await runWorkflow(process.cwd(), { workflow, description });
   });
 
@@ -28,6 +30,7 @@ program
   .description("Initialize Stack Forge (zero-config)")
   .option("--workflow <name>", "Default workflow type", "feature")
   .action(async (opts) => {
+    logger.debug({ workflow: opts.workflow }, "Starting init");
     await runInit(process.cwd(), { workflow: opts.workflow });
   });
 
@@ -35,6 +38,7 @@ program
   .command("status")
   .description("Show current workflow status")
   .action(async () => {
+    logger.debug("Starting status check");
     await runStatus(process.cwd());
   });
 
@@ -42,6 +46,7 @@ program
   .command("update")
   .description("Re-scan providers and update configuration")
   .action(async () => {
+    logger.debug("Starting update");
     await runUpdate(process.cwd());
   });
 
@@ -49,6 +54,7 @@ program
   .command("generate")
   .description("Regenerate all config files")
   .action(async () => {
+    logger.debug("Starting generate");
     await runGenerate(process.cwd());
   });
 
@@ -57,6 +63,7 @@ program
   .description("Check health of installed providers")
   .option("--verbose", "Show detailed output")
   .action(async (opts) => {
+    logger.debug({ verbose: opts.verbose }, "Starting healthcheck");
     await runHealthcheck(process.cwd(), { verbose: opts.verbose });
   });
 
@@ -64,6 +71,7 @@ program
   .command("validate")
   .description("Validate implementation against spec requirements")
   .action(async () => {
+    logger.debug("Starting validate");
     const { allPassed } = await runValidate();
     if (!allPassed) process.exit(1);
   });
