@@ -53,14 +53,17 @@ export class StateManager {
     try {
       const content = await readFile(this.statePath, "utf-8");
       return JSON.parse(content) as WorkflowState;
-    } catch {
+    } catch (e) {
+      console.error(`Failed to read state file: ${e instanceof Error ? e.message : String(e)}`);
       if (existsSync(this.backupPath)) {
         try {
           const content = await readFile(this.backupPath, "utf-8");
           const state = JSON.parse(content) as WorkflowState;
-          await this.write(state);
+          state.updated_at = new Date().toISOString();
+          await writeFile(this.statePath, JSON.stringify(state, null, 2), "utf-8");
           return state;
-        } catch {
+        } catch (e2) {
+          console.error(`Failed to read backup: ${e2 instanceof Error ? e2.message : String(e2)}`);
           return null;
         }
       }
