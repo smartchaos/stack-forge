@@ -70,13 +70,15 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
     const results = await installProvidersSilent(missing);
     for (const result of results) {
       if (result.status === "installed") {
-        const entry = missing.find((m) => m.name === result.provider)!;
-        detected[result.provider] = {
-          name: entry.name,
-          capabilities: entry.capabilities,
-          source: "installed-by-cforge",
-          detected_at: new Date().toISOString(),
-        };
+        const entry = missing.find((m) => m.name === result.provider);
+        if (entry) {
+          detected[result.provider] = {
+            name: entry.name,
+            capabilities: entry.capabilities,
+            source: "installed-by-cforge",
+            detected_at: new Date().toISOString(),
+          };
+        }
       }
     }
 

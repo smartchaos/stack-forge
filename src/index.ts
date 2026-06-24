@@ -14,17 +14,10 @@ program
 
 program
   .command("init")
-  .description("Initialize Stack Forge in the current project")
-  .option("--mode <mode>", "Init mode: fresh or existing", "existing")
+  .description("Initialize Stack Forge (zero-config)")
   .option("--workflow <name>", "Default workflow type", "feature")
-  .option("--description <desc>", "Project description", "")
   .action(async (opts) => {
-    await runInit(process.cwd(), {
-      mode: opts.mode as "fresh" | "existing",
-      workflow: opts.workflow,
-      description: opts.description,
-    });
-    console.log("Stack Forge initialized!");
+    await runInit(process.cwd(), { workflow: opts.workflow });
   });
 
 program
