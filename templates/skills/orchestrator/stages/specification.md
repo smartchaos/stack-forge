@@ -25,6 +25,7 @@ Read the proposal and write a formal specification.
 2. Break down the proposal into discrete capabilities
 3. For each capability, write a spec with requirements using normative language (SHALL, MUST)
 4. Write specs to `.cforge/artifacts/specs/<capability>/spec.md`
+5. Run `cforge validate` to verify spec completeness — fix any failing requirements before proceeding
 
 ## Output
 
@@ -32,4 +33,4 @@ Read the proposal and write a formal specification.
 
 ## Completion
 
-After writing all specs, confirm: "Specification complete. Specs written to .cforge/artifacts/specs/"
+After writing all specs and validate passes, confirm: "Specification complete. Specs written to .cforge/artifacts/specs/"
