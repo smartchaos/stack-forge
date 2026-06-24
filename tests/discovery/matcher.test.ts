@@ -4,6 +4,13 @@ import type { ScanResult } from "../../src/discovery/scanner.js";
 import type { ProviderDefinition } from "../../src/types/provider.js";
 
 describe("matcher", () => {
+  const baseScan: ScanResult = {
+    skill_dirs: [],
+    plugins: [],
+    mcp_servers: [],
+    cli_commands: [],
+  };
+
   const providers: Record<string, ProviderDefinition> = {
     superpowers: {
       name: "superpowers",
@@ -53,5 +60,73 @@ describe("matcher", () => {
 
     const result = matchProviders(scan, providers);
     expect(Object.keys(result)).toHaveLength(0);
+  });
+
+  it("matches command_exists with match_prefix", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      cli_commands: ["gstack", "gstack-deploy"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "command_exists", match_prefix: "gstack" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeDefined();
+  });
+
+  it("does not match command_exists when prefix missing", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      cli_commands: ["other-tool"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "command_exists", match_prefix: "gstack" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeUndefined();
+  });
+
+  it("matches command_exists with exact command", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      cli_commands: ["gstack"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "command_exists", command: "gstack" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeDefined();
+  });
+
+  it("does not match command_exists when command missing", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      cli_commands: ["other-tool"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "command_exists", command: "gstack" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeUndefined();
   });
 });
