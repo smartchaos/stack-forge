@@ -129,4 +129,72 @@ describe("matcher", () => {
     const result = matchProviders(scan, providers);
     expect(result.test).toBeUndefined();
   });
+
+  it("matches skill_exists with path", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      skill_dirs: ["workflow-orchestrator"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "skill_exists", path: "~/.claude/skills/workflow-orchestrator" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeDefined();
+  });
+
+  it("does not match skill_exists with path when no match", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      skill_dirs: ["other-skill"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "skill_exists", path: "~/.claude/skills/workflow-orchestrator" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeUndefined();
+  });
+
+  it("matches slash_command", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      skill_dirs: ["_gstack-command"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "slash_command", command_name: "gstack" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeDefined();
+  });
+
+  it("does not match slash_command when no match", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      skill_dirs: ["other-skill"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "slash_command", command_name: "gstack" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeUndefined();
+  });
 });
