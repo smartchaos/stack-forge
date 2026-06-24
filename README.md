@@ -25,7 +25,7 @@ cforge bugfix "fix login" # explicit
 
 1. `cforge init` scans your system for installed plugins
 2. Generates an orchestration skill + stage skills
-3. `/workflow` triggers the orchestration skill
+3. `cforge` triggers the orchestration skill
 4. The skill forks subagents for each stage automatically
 5. Stages: Brainstorm → Spec → Plan → Build → Review → Release
 
@@ -36,8 +36,8 @@ cforge bugfix "fix login" # explicit
 | `cforge init` | Initialize Stack Forge (zero-config) |
 | `cforge [workflow] [desc]` | Start or continue a workflow |
 | `cforge status` | Show current workflow status |
-| `cforge update` | Re-scan providers |
-| `cforge generate` | Regenerate config files |
+| `cforge update` | Re-scan providers and update configuration |
+| `cforge generate` | Regenerate all config files |
 
 ## Supported Providers
 

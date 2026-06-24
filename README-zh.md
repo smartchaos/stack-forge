@@ -25,7 +25,7 @@ cforge bugfix "修复登录"  # 显式指定
 
 1. `cforge init` 扫描系统中已安装的插件
 2. 生成编排 Skill + 各阶段 Stage Skill
-3. `/workflow` 触发编排 Skill
+3. `cforge` 触发编排 Skill
 4. 编排 Skill 自动 fork 子 Agent 执行每个阶段
 5. 阶段流程：Brainstorm → Spec → Plan → Build → Review → Release
 
@@ -36,8 +36,8 @@ cforge bugfix "修复登录"  # 显式指定
 | `cforge init` | 初始化 Stack Forge（零配置） |
 | `cforge [workflow] [desc]` | 启动或继续工作流 |
 | `cforge status` | 查看当前工作流状态 |
-| `cforge update` | 重新扫描 Provider |
-| `cforge generate` | 重新生成配置文件 |
+| `cforge update` | 重新扫描 Provider 并更新配置 |
+| `cforge generate` | 重新生成所有配置文件 |
 
 ## 支持的 Provider
 
