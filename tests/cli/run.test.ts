@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { runWorkflow } from "../../src/cli/run.js";
-import { writeFile, mkdir, rm } from "fs/promises";
+import { writeFile, readFile, mkdir, rm } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 
@@ -62,8 +62,11 @@ describe("runWorkflow", () => {
     consoleSpy.mockRestore();
   });
 
-  it("updates state with new workflow type", async () => {
-    const state = makeState();
+  it("updates state with new workflow type and resets progress", async () => {
+    const state = makeState({
+      status: "in_progress",
+      current_stage: "planning",
+    });
     await writeFile(
       join(TEST_DIR, ".cforge/state.json"),
       JSON.stringify(state)
@@ -74,11 +77,28 @@ describe("runWorkflow", () => {
       description: "fix login",
     });
     const newState = JSON.parse(
-      await import("fs/promises").then((fs) =>
-        fs.readFile(join(TEST_DIR, ".cforge/state.json"), "utf-8")
-      )
+      await readFile(join(TEST_DIR, ".cforge/state.json"), "utf-8")
     );
     expect(newState.workflow).toBe("bugfix");
     expect(newState.context.description).toBe("fix login");
+    expect(newState.status).toBe("in_progress");
+    expect(newState.current_stage).toBe("brainstorm");
+  });
+
+  it("does not reset progress when only description changes", async () => {
+    const state = makeState({
+      current_stage: "planning",
+    });
+    await writeFile(
+      join(TEST_DIR, ".cforge/state.json"),
+      JSON.stringify(state)
+    );
+
+    await runWorkflow(TEST_DIR, { description: "updated desc" });
+    const newState = JSON.parse(
+      await readFile(join(TEST_DIR, ".cforge/state.json"), "utf-8")
+    );
+    expect(newState.context.description).toBe("updated desc");
+    expect(newState.current_stage).toBe("planning");
   });
 });
