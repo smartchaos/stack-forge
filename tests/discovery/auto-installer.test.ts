@@ -39,6 +39,19 @@ describe("installProviderSilent", () => {
     expect(result.status).toBe("failed");
   });
 
+  it("handles commands with shell operators", async () => {
+    const entry: ManifestEntry = {
+      name: "test-provider",
+      description: "Test",
+      capabilities: ["test"],
+      priority: "required",
+      install: { type: "npm", command: "echo ok && echo done" },
+    };
+
+    const result = await installProviderSilent(entry);
+    expect(result.status).toBe("installed");
+  });
+
   it("runs post_install hook after install", async () => {
     const entry = makeEntry({
       name: "with-post",

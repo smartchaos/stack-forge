@@ -1,8 +1,8 @@
-import { execFile } from "child_process";
+import { exec } from "child_process";
 import { promisify } from "util";
 import type { ManifestEntry } from "../types/config.js";
 
-const execFileAsync = promisify(execFile);
+const execAsync = promisify(exec);
 
 export interface InstallResult {
   provider: string;
@@ -35,16 +35,10 @@ export async function installProviderSilent(entry: ManifestEntry): Promise<Insta
   }
 
   try {
-    const parts = entry.install.command.split(" ");
-    const cmd = parts[0];
-    const args = parts.slice(1);
-    await execFileAsync(cmd, args);
+    await execAsync(entry.install.command);
 
     if (entry.post_install) {
-      const postParts = entry.post_install.split(" ");
-      const postCmd = postParts[0];
-      const postArgs = postParts.slice(1);
-      await execFileAsync(postCmd, postArgs);
+      await execAsync(entry.post_install);
     }
 
     return { provider: entry.name, status: "installed" };
