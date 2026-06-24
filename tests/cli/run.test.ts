@@ -14,7 +14,7 @@ function makeState(overrides: Record<string, unknown> = {}) {
     current_stage: "brainstorm",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    context: { type: "feature", description: "add auth" },
+    context: { type: "feature", project_name: "test-project", description: "add auth" },
     stages: {
       brainstorm: { status: "pending", provider: "", artifact: null },
       specification: { status: "pending", provider: "", artifact: null },

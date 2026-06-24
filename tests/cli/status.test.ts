@@ -26,7 +26,7 @@ describe("cforge status", () => {
         updated_at: "2026-06-23T10:00:00Z",
         current_stage: "brainstorm",
         status: "in_progress",
-        context: { type: "feature", description: "add auth" },
+        context: { type: "feature", project_name: "test-project", description: "add auth" },
         stages: {
           brainstorm: { status: "in_progress", provider: "superpowers" },
           specification: { status: "pending", provider: "openspec" },

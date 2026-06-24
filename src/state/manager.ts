@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir, copyFile } from "fs/promises";
 import { existsSync } from "fs";
 import { join } from "path";
 import type { WorkflowState, StageName, StageStatus } from "../types/workflow.js";
+import { WorkflowStateSchema } from "../schemas/config.js";
 
 const STAGE_ORDER: StageName[] = [
   "brainstorm",
@@ -52,16 +53,23 @@ export class StateManager {
 
     try {
       const content = await readFile(this.statePath, "utf-8");
-      return JSON.parse(content) as WorkflowState;
+      const parsed = JSON.parse(content);
+      const result = WorkflowStateSchema.safeParse(parsed);
+      if (!result.success) {
+        console.error("Invalid state file:", result.error.issues);
+        return null;
+      }
+      return result.data;
     } catch (e) {
       console.error(`Failed to read state file: ${e instanceof Error ? e.message : String(e)}`);
       if (existsSync(this.backupPath)) {
         try {
           const content = await readFile(this.backupPath, "utf-8");
-          const state = JSON.parse(content) as WorkflowState;
-          state.updated_at = new Date().toISOString();
-          await writeFile(this.statePath, JSON.stringify(state, null, 2), "utf-8");
-          return state;
+          const parsed = JSON.parse(content);
+          const result = WorkflowStateSchema.safeParse(parsed);
+          if (!result.success) return null;
+          await this.write(result.data);
+          return result.data;
         } catch (e2) {
           console.error(`Failed to read backup: ${e2 instanceof Error ? e2.message : String(e2)}`);
           return null;

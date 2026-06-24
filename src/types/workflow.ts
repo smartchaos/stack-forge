@@ -14,7 +14,7 @@ export interface StageState {
   started_at?: string;
   completed_at?: string;
   provider: string;
-  artifact?: string;
+  artifact?: string | null;
 }
 
 export interface WorkflowContext {
