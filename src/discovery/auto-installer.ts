@@ -14,17 +14,6 @@ function detectOs(): "macos" | "linux" | "windows" {
   return "linux";
 }
 
-function getInstallCommand(entry: ManifestEntry): string {
-  if (entry.install.type === "git_clone") {
-    const os = detectOs();
-    if (os === "windows") {
-      return `echo "Windows not supported for git_clone"`;
-    }
-    return entry.install.command;
-  }
-  return entry.install.command;
-}
-
 export async function installProviderSilent(entry: ManifestEntry): Promise<InstallResult> {
   if (entry.install.type === "claude_command") {
     return {
@@ -34,9 +23,17 @@ export async function installProviderSilent(entry: ManifestEntry): Promise<Insta
     };
   }
 
-  const cmd = getInstallCommand(entry);
+  // Windows not supported for git_clone
+  if (entry.install.type === "git_clone" && detectOs() === "windows") {
+    return {
+      provider: entry.name,
+      status: "pending",
+      instruction: `Windows not supported. Install manually: ${entry.install.command}`,
+    };
+  }
+
   try {
-    execSync(cmd, { stdio: "pipe" });
+    execSync(entry.install.command, { stdio: "pipe" });
     if (entry.post_install) {
       execSync(entry.post_install, { stdio: "pipe" });
     }
