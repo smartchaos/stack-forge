@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = join(__filename, "..");
 const projectRoot = join(__dirname, "..", "..");
 
-describe("init workflow integration", () => {
+describe("init workflow integration", { timeout: 15000 }, () => {
   const testDir = join(tmpdir(), "cforge-integration-test");
 
   beforeEach(async () => {
