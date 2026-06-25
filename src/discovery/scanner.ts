@@ -12,7 +12,7 @@ export interface ScanResult {
 
 export interface ScanOptions {
   skillsDir?: string;
-  claudeJson?: string;
+  installedPluginsJson?: string;
   mcpJson?: string;
 }
 
@@ -33,21 +33,21 @@ async function scanSkillDirs(skillsDir: string): Promise<string[]> {
   return entries.filter((e) => e.isDirectory()).map((e) => e.name);
 }
 
-async function scanPlugins(claudeJson: string): Promise<{ plugins: string[]; error?: string }> {
-  if (!(await exists(claudeJson))) return { plugins: [] };
+async function scanPlugins(installedPluginsJson: string): Promise<{ plugins: string[]; error?: string }> {
+  if (!(await exists(installedPluginsJson))) return { plugins: [] };
   try {
-    const content = await readFile(claudeJson, "utf-8");
+    const content = await readFile(installedPluginsJson, "utf-8");
     const data = JSON.parse(content);
-    if (Array.isArray(data.plugins)) {
+    if (data.plugins && typeof data.plugins === "object" && !Array.isArray(data.plugins)) {
       return {
-        plugins: data.plugins.map((p: string) => p.split("@")[0].split("/").pop() || p),
+        plugins: Object.keys(data.plugins).map((key) => key.split("@")[0].split("/").pop() || key),
       };
     }
     return { plugins: [] };
   } catch (e) {
     return {
       plugins: [],
-      error: `Failed to parse ${claudeJson}: ${e instanceof Error ? e.message : String(e)}`,
+      error: `Failed to parse ${installedPluginsJson}: ${e instanceof Error ? e.message : String(e)}`,
     };
   }
 }
@@ -73,12 +73,12 @@ export async function scanForPlugins(
   options: ScanOptions = {}
 ): Promise<ScanResult> {
   const skillsDir = options.skillsDir || DEFAULT_SKILLS_DIR;
-  const claudeJson = options.claudeJson || join(homedir(), ".claude.json");
+  const installedPluginsJson = options.installedPluginsJson || join(homedir(), ".claude", "plugins", "installed_plugins.json");
   const mcpJson = options.mcpJson || join(process.cwd(), ".mcp.json");
 
   const [skill_dirs, pluginsResult, mcpResult] = await Promise.all([
     scanSkillDirs(skillsDir),
-    scanPlugins(claudeJson),
+    scanPlugins(installedPluginsJson),
     scanMcpServers(mcpJson),
   ]);
 

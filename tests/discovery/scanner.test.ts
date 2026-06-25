@@ -25,16 +25,28 @@ describe("scanner", () => {
   });
 
   it("detects claude plugin references", async () => {
-    await writeFile(join(testDir, ".claude.json"), JSON.stringify({
-      plugins: ["superpowers@claude-plugins-official"]
+    await writeFile(join(testDir, "installed_plugins.json"), JSON.stringify({
+      version: 2,
+      plugins: {
+        "superpowers@claude-plugins-official": [
+          {
+            scope: "user",
+            installPath: "/Users/test/.claude/plugins/cache/claude-plugins-official/superpowers/6.0.3",
+            version: "6.0.3"
+          }
+        ]
+      }
     }));
 
-    const results = await scanForPlugins({ claudeJson: join(testDir, ".claude.json") });
+    const results = await scanForPlugins({ installedPluginsJson: join(testDir, "installed_plugins.json") });
     expect(results.plugins).toContain("superpowers");
   });
 
   it("returns empty when nothing found", async () => {
-    const results = await scanForPlugins({ skillsDir: join(testDir, "nonexistent") });
+    const results = await scanForPlugins({
+      skillsDir: join(testDir, "nonexistent"),
+      installedPluginsJson: join(testDir, "nonexistent", "installed_plugins.json"),
+    });
     expect(results.skill_dirs).toEqual([]);
     expect(results.plugins).toEqual([]);
   });
@@ -51,11 +63,11 @@ describe("scanForPlugins error handling", () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  it("handles malformed claude.json gracefully", async () => {
+  it("handles malformed installed_plugins.json gracefully", async () => {
     await writeFile(join(testDir, "malformed.json"), "{ invalid json");
 
     const result = await scanForPlugins({
-      claudeJson: join(testDir, "malformed.json"),
+      installedPluginsJson: join(testDir, "malformed.json"),
     });
 
     expect(result.plugins).toEqual([]);
