@@ -8,15 +8,7 @@ import { generateClaudeMd, generateProvidersMd } from "../generator/claude-md.js
 import { scanForPlugins } from "../discovery/scanner.js";
 import { matchProviders } from "../discovery/matcher.js";
 import { loadProviders, loadCapabilities, loadManifest } from "../discovery/registry.js";
-
-const FEATURE_STAGES = [
-  "brainstorm",
-  "specification",
-  "planning",
-  "implementation",
-  "review",
-  "release",
-];
+import { WORKFLOW_STAGES } from "../state/manager.js";
 
 export async function runGenerate(projectDir: string): Promise<void> {
   const cforgeDir = join(projectDir, ".cforge");
@@ -34,14 +26,16 @@ export async function runGenerate(projectDir: string): Promise<void> {
   const capabilities = await loadCapabilities();
   const manifest = await loadManifest();
 
+  const stages = WORKFLOW_STAGES[config.workflow] || WORKFLOW_STAGES["feature"];
+
   await generateOrchestrator(projectDir, {
     workflowName: config.workflow,
-    stages: FEATURE_STAGES,
+    stages,
   });
 
   await generateStages(projectDir, {
     workflowName: config.workflow,
-    stages: FEATURE_STAGES,
+    stages,
     description: state.context.description,
   });
 

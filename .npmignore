@@ -22,4 +22,5 @@ coverage/
 .DS_Store
 *.log
 .cforge/
+.claude/
 codegraph/

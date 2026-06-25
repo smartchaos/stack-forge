@@ -15,14 +15,15 @@ context: fork
 
 ## Input
 
-- **Proposal:** `.cforge/artifacts/proposal.md`
-- **Specs:** `.cforge/artifacts/specs/`
+- **Proposal:** `.cforge/artifacts/proposal.md` (feature workflow)
+- **Diagnosis:** `.cforge/artifacts/diagnosis.md` (bugfix workflow)
+- **Specs:** `.cforge/artifacts/specs/` (feature workflow, if available)
 
 ## Task
 
 Create a detailed implementation plan. Break work into bite-sized tasks.
 
-1. Read proposal and all specs
+1. Read available inputs (proposal, diagnosis, specs — whatever exists)
 2. Identify implementation order (dependencies first)
 3. Create tasks.md with each task as one action (2-5 minutes), exact file paths, complete code
 4. Write to `.cforge/artifacts/tasks.md`

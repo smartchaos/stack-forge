@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const StageNameSchema = z.enum([
+  "diagnosis",
   "brainstorm",
   "specification",
   "planning",
@@ -35,7 +36,7 @@ export const WorkflowStateSchema = z.object({
   current_stage: StageNameSchema.nullable(),
   status: WorkflowStatusSchema,
   context: WorkflowContextSchema,
-  stages: z.record(StageNameSchema, StageStateSchema),
+  stages: z.record(z.string(), StageStateSchema),
 });
 
 export const ForgeConfigSchema = z.object({

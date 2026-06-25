@@ -25,6 +25,28 @@ describe("WorkflowStateSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("validates bugfix workflow state with diagnosis stage", () => {
+    const state = {
+      version: "1.0",
+      workflow: "bugfix",
+      created_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-01T00:00:00.000Z",
+      current_stage: "diagnosis",
+      status: "in_progress",
+      context: { type: "bugfix", project_name: "test", description: "fix login" },
+      stages: {
+        diagnosis: { status: "pending", provider: "", artifact: null },
+        planning: { status: "pending", provider: "", artifact: null },
+        implementation: { status: "pending", provider: "", artifact: null },
+        review: { status: "pending", provider: "", artifact: null },
+        release: { status: "pending", provider: "", artifact: null },
+      },
+    };
+
+    const result = WorkflowStateSchema.safeParse(state);
+    expect(result.success).toBe(true);
+  });
+
   it("rejects invalid status", () => {
     const state = {
       version: "1.0",

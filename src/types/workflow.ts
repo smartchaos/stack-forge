@@ -2,6 +2,7 @@ export type StageStatus = "pending" | "in_progress" | "completed" | "failed" | "
 export type WorkflowStatus = "in_progress" | "paused" | "done" | "error";
 
 export type StageName =
+  | "diagnosis"
   | "brainstorm"
   | "specification"
   | "planning"
@@ -32,7 +33,7 @@ export interface WorkflowState {
   current_stage: StageName | null;
   status: WorkflowStatus;
   context: WorkflowContext;
-  stages: Record<StageName, StageState>;
+  stages: Record<string, StageState>;
 }
 
 export interface WorkflowDefinition {

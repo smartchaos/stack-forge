@@ -12,7 +12,7 @@ import { generateOrchestrator } from "../generator/orchestrator.js";
 import { generateStages } from "../generator/stages.js";
 import { generateCommands } from "../generator/commands.js";
 import { generateClaudeMd, generateProvidersMd } from "../generator/claude-md.js";
-import { StateManager } from "../state/manager.js";
+import { StateManager, WORKFLOW_STAGES } from "../state/manager.js";
 import { logger } from "../logger.js";
 import { ForgeConfigSchema } from "../schemas/config.js";
 import type { ForgeConfig } from "../types/config.js";
@@ -21,15 +21,6 @@ import type { DetectedProvider } from "../types/provider.js";
 export interface InitOptions {
   workflow?: string;
 }
-
-const FEATURE_STAGES = [
-  "brainstorm",
-  "specification",
-  "planning",
-  "implementation",
-  "review",
-  "release",
-];
 
 async function loadExistingProviders(cforgeDir: string): Promise<Record<string, DetectedProvider>> {
   const providersPath = join(cforgeDir, "providers.yaml");
@@ -156,14 +147,16 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
   await mkdir(join(cforgeDir, "errors"), { recursive: true });
 
   // 11. Generate skill files
+  const stages = WORKFLOW_STAGES[workflow] || WORKFLOW_STAGES["feature"];
+
   await generateOrchestrator(projectDir, {
     workflowName: workflow,
-    stages: FEATURE_STAGES,
+    stages,
   });
 
   await generateStages(projectDir, {
     workflowName: workflow,
-    stages: FEATURE_STAGES,
+    stages,
     description: projectInfo.description,
   });
 

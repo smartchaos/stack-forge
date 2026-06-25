@@ -35,8 +35,10 @@ describe("claude-md generator", () => {
     await generateClaudeMd(testDir, baseOptions);
     const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
     expect(content).toContain("## Stack Forge");
-    expect(content).toContain("/workflow");
+    expect(content).toContain("cforge feature");
     expect(content).toContain("providers.md");
+    expect(content).toContain("feature");
+    expect(content).toContain("bugfix");
   });
 
   it("does not duplicate Stack Forge section", async () => {

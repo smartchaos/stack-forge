@@ -5,7 +5,7 @@ import type { WorkflowState, StageName, StageStatus } from "../types/workflow.js
 import { WorkflowStateSchema } from "../schemas/config.js";
 import { logger } from "../logger.js";
 
-const STAGE_ORDER: StageName[] = [
+const FEATURE_STAGES: StageName[] = [
   "brainstorm",
   "specification",
   "planning",
@@ -13,6 +13,23 @@ const STAGE_ORDER: StageName[] = [
   "review",
   "release",
 ];
+
+const BUGFIX_STAGES: StageName[] = [
+  "diagnosis",
+  "planning",
+  "implementation",
+  "review",
+  "release",
+];
+
+export const WORKFLOW_STAGES: Record<string, StageName[]> = {
+  feature: FEATURE_STAGES,
+  bugfix: BUGFIX_STAGES,
+};
+
+function getStageOrder(stages: Record<string, unknown>): StageName[] {
+  return Object.keys(stages) as StageName[];
+}
 
 function validateState(content: string): WorkflowState | null {
   try {
@@ -29,12 +46,12 @@ function validateState(content: string): WorkflowState | null {
   }
 }
 
-function defaultStages(): WorkflowState["stages"] {
+function defaultStages(stageNames: StageName[]): WorkflowState["stages"] {
   const stages: Record<string, { status: StageStatus; provider: string; artifact: null }> = {};
-  for (const name of STAGE_ORDER) {
+  for (const name of stageNames) {
     stages[name] = { status: "pending", provider: "", artifact: null };
   }
-  return stages as unknown as WorkflowState["stages"];
+  return stages as WorkflowState["stages"];
 }
 
 export class StateManager {
@@ -46,18 +63,20 @@ export class StateManager {
     this.backupPath = join(dir, "state.json.bak");
   }
 
-  async create(workflow: string, projectName: string, description: string): Promise<WorkflowState> {
+  async create(workflow: string, projectName: string, description: string, stageNames?: StageName[]): Promise<WorkflowState> {
     await mkdir(this.dir, { recursive: true });
+
+    const stages = stageNames || WORKFLOW_STAGES[workflow] || FEATURE_STAGES;
 
     const state: WorkflowState = {
       version: "1.0",
       workflow,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      current_stage: "brainstorm",
+      current_stage: stages[0],
       status: "in_progress",
       context: { type: workflow, project_name: projectName, description },
-      stages: defaultStages(),
+      stages: defaultStages(stages),
     };
 
     await this.write(state);
@@ -108,11 +127,12 @@ export class StateManager {
     state.stages[name].completed_at = new Date().toISOString();
     if (artifact) state.stages[name].artifact = artifact;
 
-    const currentIndex = STAGE_ORDER.indexOf(name);
+    const stageOrder = getStageOrder(state.stages);
+    const currentIndex = stageOrder.indexOf(name);
     const nextIndex = currentIndex + 1;
 
-    if (nextIndex < STAGE_ORDER.length) {
-      state.current_stage = STAGE_ORDER[nextIndex];
+    if (nextIndex < stageOrder.length) {
+      state.current_stage = stageOrder[nextIndex];
     } else {
       state.current_stage = null;
       state.status = "done";

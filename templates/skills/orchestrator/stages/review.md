@@ -15,17 +15,18 @@ context: fork
 
 ## Input
 
-- **Specs:** `.cforge/artifacts/specs/`
+- **Specs:** `.cforge/artifacts/specs/` (feature workflow, if available)
+- **Diagnosis:** `.cforge/artifacts/diagnosis.md` (bugfix workflow)
 - **Git diff** against main branch
 
 ## Task
 
-Review the implementation against the specification.
+Review the implementation against the specification (feature) or diagnosis (bugfix).
 
-1. Read all specs from `.cforge/artifacts/specs/`
+1. Read available specs and/or diagnosis from `.cforge/artifacts/`
 2. Get the git diff: `git diff main...HEAD`
-3. Check each spec requirement is implemented
-4. Look for SQL safety, race conditions, missing error handling, test gaps, spec deviations
+3. Check each requirement is implemented (feature) or the fix addresses root cause (bugfix)
+4. Look for SQL safety, race conditions, missing error handling, test gaps
 5. Write review to `.cforge/artifacts/review.md`
 
 ## Output

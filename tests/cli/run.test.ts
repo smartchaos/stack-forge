@@ -82,7 +82,7 @@ describe("runWorkflow", () => {
     expect(newState.workflow).toBe("bugfix");
     expect(newState.context.description).toBe("fix login");
     expect(newState.status).toBe("in_progress");
-    expect(newState.current_stage).toBe("brainstorm");
+    expect(newState.current_stage).toBe("diagnosis");
   });
 
   it("does not reset progress when only description changes", async () => {
