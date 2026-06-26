@@ -19,10 +19,8 @@ function buildStackForgeSection(options: ClaudeMdOptions): string {
   section += `- Status: \`cforge status\`\n`;
   section += `- Providers: \`.cforge/providers.md\`\n\n`;
   section += `### When to Use\n\n`;
-  section += `Use cforge when:\n`;
-  section += `- User asks to implement a feature, fix a bug, or add functionality\n`;
-  section += `- Starting any multi-step coding task\n`;
-  section += `- User says "workflow", "feature", "bugfix", "implement", or "fix"\n\n`;
+  section += `- \`feature\` workflow — new feature, enhancement, or UI work\n`;
+  section += `- \`bugfix\` workflow — fix a bug or resolve an issue\n`;
   section += `### Workflows\n\n`;
   section += `- \`feature\` — brainstorm → specification → planning → implementation → review → release\n`;
   section += `- \`bugfix\` — diagnosis → planning → implementation → review → release\n`;
