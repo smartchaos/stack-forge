@@ -15,15 +15,19 @@ export interface ClaudeMdOptions {
 function buildStackForgeSection(options: ClaudeMdOptions): string {
   const { workflowName } = options;
   let section = `## Stack Forge\n\n`;
-  section += `- Start: \`cforge ${workflowName} "<description>"\`\n`;
-  section += `- Status: \`cforge status\`\n`;
-  section += `- Providers: \`.cforge/providers.md\`\n\n`;
-  section += `### When to Use\n\n`;
-  section += `- \`feature\` workflow — new feature, enhancement, or UI work\n`;
-  section += `- \`bugfix\` workflow — fix a bug or resolve an issue\n`;
+  section += `Workflow orchestration for Claude Code.\n\n`;
+  section += `### Commands\n\n`;
+  section += `- \`cforge ${workflowName} "<description>"\` — start workflow\n`;
+  section += `- \`cforge status\` — check progress\n`;
+  section += `- \`cforge healthcheck\` — verify providers\n`;
+  section += `- \`cforge update\` — rescan providers\n`;
+  section += `- \`cforge reset\` — clear state\n\n`;
   section += `### Workflows\n\n`;
-  section += `- \`feature\` — brainstorm → specification → planning → implementation → review → release\n`;
-  section += `- \`bugfix\` — diagnosis → planning → implementation → review → release\n`;
+  section += `- \`feature\`: brainstorm → spec → plan → implement → review → release\n`;
+  section += `- \`bugfix\`: diagnosis → plan → implement → review → release\n\n`;
+  section += `### Debug\n\n`;
+  section += `\`CFORGE_LOG_LEVEL=debug cforge <command>\`\n\n`;
+  section += `Providers: \`.cforge/providers.md\`\n`;
   return section;
 }
 

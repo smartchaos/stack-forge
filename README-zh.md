@@ -65,6 +65,7 @@ cforge bugfix "修复登录"  # 显式指定
 | `cforge update` | 重新扫描 Provider 并更新配置 |
 | `cforge generate` | 重新生成所有配置文件 |
 | `cforge validate` | 验证实现是否符合规格要求 |
+| `cforge reset` | 重置 Stack Forge 到初始化前状态 |
 
 ## 调试模式
 
