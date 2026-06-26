@@ -1,6 +1,6 @@
 {
   "name": "cforge",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Claude Code workflow orchestration engine",
   "type": "module",
   "bin": {
