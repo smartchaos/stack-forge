@@ -1,4 +1,5 @@
-import { remove, pathExists, readFile, writeFile } from "fs-extra";
+import { remove, pathExists } from "fs-extra";
+import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import inquirer from "inquirer";
 import { logger } from "../logger.js";
