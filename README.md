@@ -65,6 +65,7 @@ The Implementation stage automatically detects independent tasks and executes th
 | `cforge update` | Re-scan providers and update configuration |
 | `cforge generate` | Regenerate all config files |
 | `cforge validate` | Validate implementation against spec requirements |
+| `cforge reset` | Reset Stack Forge to pre-initialization state |
 
 ## Debug Mode
 
