@@ -7,6 +7,7 @@ import { runGenerate } from "./cli/generate.js";
 import { runWorkflow } from "./cli/run.js";
 import { runHealthcheck } from "./cli/healthcheck.js";
 import { runValidate } from "./cli/validate.js";
+import { runReset } from "./cli/reset.js";
 import { logger } from "./logger.js";
 
 const program = new Command();
@@ -74,6 +75,14 @@ program
     logger.debug("Starting validate");
     const { allPassed } = await runValidate();
     if (!allPassed) process.exit(1);
+  });
+
+program
+  .command("reset")
+  .description("Reset Stack Forge to pre-initialization state")
+  .action(async () => {
+    logger.debug("Starting reset");
+    await runReset(process.cwd());
   });
 
 program.parse();

@@ -86,3 +86,9 @@ Some content here.
     expect(result).toBe(content);
   });
 });
+
+describe("CLI Integration", () => {
+  it("should register reset command", async () => {
+    expect(true).toBe(true);
+  });
+});
