@@ -15,7 +15,7 @@ const program = new Command();
 program
   .name("cforge")
   .description("Claude Code workflow orchestration engine")
-  .version("0.1.0");
+  .version("0.2.2");
 
 // Default command: cforge [workflow] [description]
 program
