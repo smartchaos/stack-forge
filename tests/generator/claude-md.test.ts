@@ -75,4 +75,11 @@ describe("claude-md generator", () => {
     expect(content).toContain("## Missing");
     expect(content).toContain("npm install -g openspec");
   });
+
+  it("treats builtin implementation as ready instead of missing", async () => {
+    await generateProvidersMd(testDir, baseOptions);
+    const content = await readFile(join(testDir, ".cforge/providers.md"), "utf-8");
+    expect(content).toContain("| Implementation | builtin | Built-in |");
+    expect(content).not.toContain("**Implementation** → builtin");
+  });
 });

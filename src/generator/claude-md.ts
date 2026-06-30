@@ -37,10 +37,12 @@ function buildProvidersMd(options: ClaudeMdOptions): string {
   const { detected, manifest, capabilities, providerDefinitions = {} } = options;
   const providerSelections = buildProviderMap(capabilities, detected, providerDefinitions);
 
-  const providerStatus: { capability: string; provider: string; ready: boolean; installCmd?: string }[] = [];
+  const providerStatus: { capability: string; provider: string; ready: boolean; statusLabel: string; installCmd?: string }[] = [];
   for (const [capName, capDef] of Object.entries(capabilities)) {
     const providerName = providerSelections[capName]?.provider || capDef.default_provider;
-    const ready = !!detected[providerName];
+    const isBuiltin = providerName === "builtin";
+    const ready = isBuiltin || !!detected[providerName];
+    const statusLabel = isBuiltin ? "Built-in" : "Ready";
 
     const manifestEntry = manifest.find((m) => m.name === providerName);
     const installCmd = !ready && manifestEntry ? manifestEntry.install.command : undefined;
@@ -49,6 +51,7 @@ function buildProvidersMd(options: ClaudeMdOptions): string {
       capability: capDef.name,
       provider: providerName,
       ready,
+      statusLabel,
       installCmd,
     });
   }
@@ -62,7 +65,7 @@ function buildProvidersMd(options: ClaudeMdOptions): string {
     content += `| Capability | Provider | Status |\n`;
     content += `|------------|----------|--------|\n`;
     for (const p of readyProviders) {
-      content += `| ${p.capability} | ${p.provider} | Ready |\n`;
+      content += `| ${p.capability} | ${p.provider} | ${p.statusLabel} |\n`;
     }
     content += `\n`;
   }
