@@ -16,10 +16,18 @@ export interface DetectionRule {
   command_name?: string;
 }
 
+export interface ProviderRouting {
+  priority?: number;
+  preferred_for?: string[];
+  excluded_capabilities?: string[];
+  fallback_for?: string[];
+}
+
 export interface ProviderDefinition {
   name: string;
   capabilities: string[];
   detect: DetectionRule[];
+  routing?: ProviderRouting;
 }
 
 export interface DetectedProvider {
@@ -28,6 +36,8 @@ export interface DetectedProvider {
   source: string;
   capabilities: string[];
   detected_at: string;
+  matched_rule_count?: number;
+  routing?: ProviderRouting;
 }
 
 export interface CapabilityDefinition {

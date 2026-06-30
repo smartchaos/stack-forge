@@ -4,6 +4,7 @@ import { stringify as dumpYaml, parse as parseYaml } from "yaml";
 import { existsSync } from "fs";
 import { scanForPlugins } from "../discovery/scanner.js";
 import { matchProviders } from "../discovery/matcher.js";
+import { buildProviderMap } from "../discovery/router.js";
 import { loadProviders, loadCapabilities, loadManifest } from "../discovery/registry.js";
 import { detectProject } from "../discovery/project-detector.js";
 import { installProvidersSilent } from "../discovery/auto-installer.js";
@@ -111,13 +112,10 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
 
   // 6. Build provider mapping
   const capabilities = await loadCapabilities();
-  const providerMap: Record<string, string> = {};
-  for (const [capName, capDef] of Object.entries(capabilities)) {
-    const detectedForCap = Object.values(detected).find((d) =>
-      d.capabilities.includes(capName)
-    );
-    providerMap[capName] = detectedForCap?.name || capDef.default_provider;
-  }
+  const providerSelections = buildProviderMap(capabilities, detected, providerDefs);
+  const providerMap = Object.fromEntries(
+    Object.entries(providerSelections).map(([capability, selection]) => [capability, selection.provider])
+  );
 
   // 7. Write config
   const config: ForgeConfig = {
@@ -180,6 +178,7 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
     detected,
     manifest,
     capabilities,
+    providerDefinitions: providerDefs,
   });
 
   // 15. Print summary

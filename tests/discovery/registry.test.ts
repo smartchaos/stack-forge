@@ -16,6 +16,8 @@ describe("registry", () => {
     expect(providers).toBeDefined();
     expect(providers.superpowers).toBeDefined();
     expect(providers.superpowers.capabilities).toContain("brainstorm");
+    expect(providers.superpowers.routing?.preferred_for).toContain("brainstorm");
+    expect(providers.superpowers.routing?.priority).toBeGreaterThan(0);
   });
 
   it("loads manifest from yaml", async () => {

@@ -3,18 +3,27 @@ superpowers:
   detect:
     - type: plugin_installed
       name: "superpowers"
+  routing:
+    priority: 100
+    preferred_for: [brainstorm, planning]
 
 feature-dev:
   capabilities: [specification]
   detect:
     - type: plugin_installed
       name: "feature-dev"
+  routing:
+    priority: 100
+    preferred_for: [specification]
 
 code-review:
   capabilities: [review]
   detect:
     - type: plugin_installed
       name: "code-review"
+  routing:
+    priority: 100
+    preferred_for: [review]
 
 gstack:
   capabilities: [release]
@@ -23,9 +32,15 @@ gstack:
       command_name: "gstack"
     - type: skill_exists
       path: "~/.claude/skills/gstack/"
+  routing:
+    priority: 100
+    preferred_for: [release]
 
 claude-mem:
   capabilities: [memory]
   detect:
     - type: mcp_server_configured
       name: "claude-mem"
+  routing:
+    priority: 100
+    preferred_for: [memory]

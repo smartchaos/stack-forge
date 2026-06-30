@@ -43,13 +43,15 @@ export function matchProviders(
   const detected: Record<string, DetectedProvider> = {};
 
   for (const [name, provider] of Object.entries(providers)) {
-    const matched = provider.detect.some((rule) => matchesDetection(scan, rule));
-    if (matched) {
+    const matchedRules = provider.detect.filter((rule) => matchesDetection(scan, rule));
+    if (matchedRules.length > 0) {
       detected[name] = {
         name,
         capabilities: provider.capabilities,
         source: `detected:${name}`,
         detected_at: new Date().toISOString(),
+        matched_rule_count: matchedRules.length,
+        routing: provider.routing,
       };
     }
   }
