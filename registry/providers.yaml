@@ -11,7 +11,7 @@ feature-dev:
       name: "feature-dev"
 
 code-review:
-  capabilities: [review]
+  capabilities: [pr-review]
   detect:
     - type: plugin_installed
       name: "code-review"

@@ -28,10 +28,10 @@ implementation:
 
 review:
   name: Review
-  description: Code review against spec
+  description: Multi-dimension code review against spec with adversarial verification
   input: diff + specs
   output: review.md
-  default_provider: code-review
+  default_provider: builtin
 
 release:
   name: Release

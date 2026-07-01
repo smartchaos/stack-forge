@@ -15,9 +15,9 @@
     command: "/plugin install feature-dev@claude-plugins-official"
 
 - name: code-review
-  description: "Multi-agent PR review with confidence-based scoring"
-  capabilities: [review]
-  priority: required
+  description: "Multi-agent PR review with confidence-based scoring (GitHub PR only)"
+  capabilities: [pr-review]
+  priority: optional
   install:
     type: claude_command
     command: "/plugin install code-review@claude-plugins-official"

@@ -14,7 +14,7 @@ code-review:
   checks:
     - type: plugin_installed
       name: "code-review"
-  critical: true
+  critical: false
 
 gstack:
   checks:
