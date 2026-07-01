@@ -44,20 +44,24 @@ export async function loadRequirements(): Promise<Requirement[]> {
   return data.requirements || [];
 }
 
+function resolveProjectPath(filePath: string): string {
+  return filePath.startsWith("/") ? filePath : resolve(PROJECT_ROOT, filePath);
+}
+
 async function fileExists(filePath: string): Promise<boolean> {
-  return existsSync(resolve(PROJECT_ROOT, filePath));
+  return existsSync(resolveProjectPath(filePath));
 }
 
 async function readFileContent(filePath: string): Promise<string | null> {
   try {
-    return await readFile(resolve(PROJECT_ROOT, filePath), "utf-8");
+    return await readFile(resolveProjectPath(filePath), "utf-8");
   } catch {
     return null;
   }
 }
 
 function checkFileExists(req: Requirement): RequirementResult {
-  const passed = existsSync(resolve(PROJECT_ROOT, req.file));
+  const passed = existsSync(resolveProjectPath(req.file));
   return {
     id: req.id,
     description: req.description,
@@ -79,8 +83,8 @@ function checkFileAbsent(req: Requirement): RequirementResult {
       message: "No pattern specified for file_absent check",
     };
   }
-  const content = existsSync(resolve(PROJECT_ROOT, req.file))
-    ? readFileSync(resolve(PROJECT_ROOT, req.file), "utf-8")
+  const content = existsSync(resolveProjectPath(req.file))
+    ? readFileSync(resolveProjectPath(req.file), "utf-8")
     : "";
   const passed = !content.includes(req.pattern);
   return {
@@ -104,8 +108,8 @@ function checkFileContent(req: Requirement): RequirementResult {
       message: "No pattern specified for file_content check",
     };
   }
-  const content = existsSync(resolve(PROJECT_ROOT, req.file))
-    ? readFileSync(resolve(PROJECT_ROOT, req.file), "utf-8")
+  const content = existsSync(resolveProjectPath(req.file))
+    ? readFileSync(resolveProjectPath(req.file), "utf-8")
     : "";
   const passed = content.includes(req.pattern);
   return {

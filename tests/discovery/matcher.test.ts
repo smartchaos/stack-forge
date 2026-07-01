@@ -198,10 +198,15 @@ describe("matcher", () => {
     expect(result.test).toBeUndefined();
   });
 
-  it("does not match skill_exists match_name as substring", () => {
+  it.each([
+    { dir: "testing-utils", shouldMatch: false },
+    { dir: "my-test-dir", shouldMatch: false },
+    { dir: "contest", shouldMatch: false },
+    { dir: "test", shouldMatch: true },
+  ])("matches skill_exists match_name exactly ($dir -> $shouldMatch)", ({ dir, shouldMatch }) => {
     const scan: ScanResult = {
       ...baseScan,
-      skill_dirs: ["testing-utils", "my-test-dir", "contest"],
+      skill_dirs: [dir],
     };
     const providers: Record<string, ProviderDefinition> = {
       test: {
@@ -212,24 +217,11 @@ describe("matcher", () => {
     };
 
     const result = matchProviders(scan, providers);
-    expect(result.test).toBeUndefined();
-  });
-
-  it("matches skill_exists match_name exactly", () => {
-    const scan: ScanResult = {
-      ...baseScan,
-      skill_dirs: ["other", "test"],
-    };
-    const providers: Record<string, ProviderDefinition> = {
-      test: {
-        name: "test",
-        capabilities: ["test"],
-        detect: [{ type: "skill_exists", match_name: "test" }],
-      },
-    };
-
-    const result = matchProviders(scan, providers);
-    expect(result.test).toBeDefined();
+    if (shouldMatch) {
+      expect(result.test).toBeDefined();
+    } else {
+      expect(result.test).toBeUndefined();
+    }
   });
 
   it("stores matched rule count and routing metadata on detected providers", () => {

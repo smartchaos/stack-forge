@@ -50,11 +50,11 @@ describe("claude-md generator", () => {
   });
 
   it("preserves trailing whitespace in user's original CLAUDE.md", async () => {
-    const original = "# Intro\n\nSome text.   \n\n\n";
+    const original = "# Intro\n\nSome text." + " ".repeat(3) + "\n\n\n";
     await writeFile(join(testDir, "CLAUDE.md"), original);
     await generateClaudeMd(testDir, baseOptions);
     const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
-    expect(content.startsWith("# Intro\n\nSome text.   \n\n\n")).toBe(true);
+    expect(content.startsWith(original)).toBe(true);
     expect(content).toContain("## Stack Forge");
   });
 

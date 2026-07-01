@@ -101,6 +101,142 @@ describe("router", () => {
     expect(selection.reason).toBe("fallback");
   });
 
+  it("maintains score ordering: preferred > default > fallback > priority", () => {
+    const detected: Record<string, DetectedProvider> = {
+      plain: {
+        name: "plain",
+        capabilities: ["specification"],
+        source: "detected:plain",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      fallback: {
+        name: "fallback",
+        capabilities: ["specification"],
+        source: "detected:fallback",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      defaultProvider: {
+        name: "feature-dev",
+        capabilities: ["specification"],
+        source: "detected:feature-dev",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      preferred: {
+        name: "preferred",
+        capabilities: ["specification"],
+        source: "detected:preferred",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+    };
+
+    const providers: Record<string, ProviderDefinition> = {
+      plain: {
+        name: "plain",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 100 },
+      },
+      fallback: {
+        name: "fallback",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 0, fallback_for: ["specification"] },
+      },
+      defaultProvider: {
+        name: "feature-dev",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 0 },
+      },
+      preferred: {
+        name: "preferred",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 0, preferred_for: ["specification"] },
+      },
+    };
+
+    const selection = selectProviderForCapability(
+      "specification",
+      specificationCapability,
+      detected,
+      providers
+    );
+
+    expect(selection.provider).toBe("preferred");
+    expect(selection.reason).toBe("preferred");
+  });
+
+  it("breaks ties deterministically by provider name", () => {
+    const detected: Record<string, DetectedProvider> = {
+      b: {
+        name: "b",
+        capabilities: ["specification"],
+        source: "detected:b",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      a: {
+        name: "a",
+        capabilities: ["specification"],
+        source: "detected:a",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+    };
+
+    const providers: Record<string, ProviderDefinition> = {
+      a: { name: "a", capabilities: ["specification"], detect: [], routing: { priority: 10 } },
+      b: { name: "b", capabilities: ["specification"], detect: [], routing: { priority: 10 } },
+    };
+
+    const selection = selectProviderForCapability(
+      "specification",
+      specificationCapability,
+      detected,
+      providers
+    );
+
+    expect(selection.provider).toBe("a");
+  });
+
+  it("caps excessive priority values", () => {
+    const detected: Record<string, DetectedProvider> = {
+      over: {
+        name: "over",
+        capabilities: ["specification"],
+        source: "detected:over",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      normal: {
+        name: "normal",
+        capabilities: ["specification"],
+        source: "detected:normal",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+    };
+
+    const providers: Record<string, ProviderDefinition> = {
+      over: { name: "over", capabilities: ["specification"], detect: [], routing: { priority: 9999 } },
+      normal: { name: "normal", capabilities: ["specification"], detect: [], routing: { priority: 50 } },
+    };
+
+    const selection = selectProviderForCapability(
+      "specification",
+      specificationCapability,
+      detected,
+      providers
+    );
+
+    expect(selection.provider).toBe("normal");
+  });
+
   it("falls back to default provider when no detected provider is eligible", () => {
     const selection = selectProviderForCapability(
       "specification",

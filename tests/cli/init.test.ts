@@ -1,3 +1,4 @@
+import { stringify as dumpYaml, parse as parseYaml } from "yaml";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdir, rm, readFile, stat } from "fs/promises";
 import { join } from "path";
@@ -139,7 +140,7 @@ describe("cforge init", () => {
         capabilities: ["brainstorm"],
         source: "detected:superpowers",
         detected_at: "2026-06-30T00:00:00.000Z",
-        matched_rule_count: 1,
+        matched_rule_count: 5,
         routing: { preferred_for: ["brainstorm"], priority: 100 },
       },
     });
@@ -147,7 +148,6 @@ describe("cforge init", () => {
     await runInit(testDir);
 
     // Simulate re-init: existing providers.yaml has custom routing, scanned provider has fewer rules
-    const existing = await readFile(join(testDir, ".cforge/providers.yaml"), "utf-8");
     vi.mocked(matchProviders).mockReturnValue({
       superpowers: {
         name: "superpowers",
@@ -160,8 +160,14 @@ describe("cforge init", () => {
 
     await runInit(testDir);
 
-    const updatedProviders = await readFile(join(testDir, ".cforge/providers.yaml"), "utf-8");
-    expect(updatedProviders).toContain("preferred_for");
+    const updatedProviders = parseYaml(
+      await readFile(join(testDir, ".cforge/providers.yaml"), "utf-8")
+    ) as { providers: Record<string, DetectedProvider> };
+    const superpowers = updatedProviders.providers.superpowers;
+    expect(superpowers.routing?.preferred_for).toEqual(["brainstorm"]);
+    expect(superpowers.routing?.priority).toBe(100);
+    expect(superpowers.matched_rule_count).toBe(1);
+    expect(superpowers.detected_at).toBe("2026-07-01T00:00:00.000Z");
   });
 
   it("prefers routed provider when multiple detected providers share a capability", async () => {

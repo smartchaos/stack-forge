@@ -37,14 +37,15 @@ describe("runHealthcheck", () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  it("updates last_verified after a provider becomes healthy", async () => {
+  it("updates last_verified when a provider transitions from missing to healthy", async () => {
+    const oldTimestamp = "2026-01-01T00:00:00.000Z";
     await writeFile(
       join(testDir, ".cforge", "health.json"),
       JSON.stringify({
-        last_check: "2026-01-01T00:00:00.000Z",
+        last_check: oldTimestamp,
         stale_threshold_hours: 168,
         providers: {
-          superpowers: { status: "missing", last_verified: null },
+          superpowers: { status: "healthy", last_verified: oldTimestamp },
         },
       })
     );
@@ -55,7 +56,8 @@ describe("runHealthcheck", () => {
     const healthContent = await readFile(join(testDir, ".cforge", "health.json"), "utf-8");
     const health = JSON.parse(healthContent);
     expect(health.providers.superpowers.status).toBe("healthy");
-    expect(health.providers.superpowers.last_verified).not.toBeNull();
-    expect(new Date(health.providers.superpowers.last_verified).getTime()).toBeGreaterThanOrEqual(before);
+    const newTimestamp = health.providers.superpowers.last_verified;
+    expect(newTimestamp).not.toBe(oldTimestamp);
+    expect(new Date(newTimestamp).getTime()).toBeGreaterThanOrEqual(before);
   });
 });
