@@ -132,6 +132,38 @@ describe("cforge init", () => {
     expect(providersContent).toContain("providers:");
   });
 
+  it("preserves existing provider metadata when re-scanning", async () => {
+    vi.mocked(matchProviders).mockReturnValue({
+      superpowers: {
+        name: "superpowers",
+        capabilities: ["brainstorm"],
+        source: "detected:superpowers",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+        routing: { preferred_for: ["brainstorm"], priority: 100 },
+      },
+    });
+
+    await runInit(testDir);
+
+    // Simulate re-init: existing providers.yaml has custom routing, scanned provider has fewer rules
+    const existing = await readFile(join(testDir, ".cforge/providers.yaml"), "utf-8");
+    vi.mocked(matchProviders).mockReturnValue({
+      superpowers: {
+        name: "superpowers",
+        capabilities: ["brainstorm"],
+        source: "detected:superpowers",
+        detected_at: "2026-07-01T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+    });
+
+    await runInit(testDir);
+
+    const updatedProviders = await readFile(join(testDir, ".cforge/providers.yaml"), "utf-8");
+    expect(updatedProviders).toContain("preferred_for");
+  });
+
   it("prefers routed provider when multiple detected providers share a capability", async () => {
     vi.mocked(matchProviders).mockReturnValue({
       superpowers: {

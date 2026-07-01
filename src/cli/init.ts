@@ -56,7 +56,7 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
   // 4. Merge existing + scanned
   let detected: Record<string, DetectedProvider> = { ...existingProviders };
   for (const [name, provider] of Object.entries(scannedProviders)) {
-    detected[name] = provider;
+    detected[name] = { ...existingProviders[name], ...provider };
   }
   logger.info({ providers: Object.keys(detected) }, "Detected providers");
 
@@ -103,7 +103,10 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
   }
 
   // 5b. Run healthcheck
-  const healthResults = await runHealthCheck(scanResult);
+  const finalScanResult = Object.keys(detected).length > Object.keys(scannedProviders).length
+    ? await scanForPlugins()
+    : scanResult;
+  const healthResults = await runHealthCheck(finalScanResult);
   const healthRecord = mergeHealthWithRecord(healthResults, null);
   await writeHealthRecord(cforgeDir, healthRecord);
   const missingCritical = healthResults

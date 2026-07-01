@@ -118,5 +118,5 @@ export async function generateClaudeMd(
   }
 
   const section = buildStackForgeSection(options);
-  await writeFile(claudeMdPath, (existing + "\n" + section).trim() + "\n", "utf-8");
+  await writeFile(claudeMdPath, existing ? `${existing}\n${section.trim()}\n` : `${section.trim()}\n`, "utf-8");
 }

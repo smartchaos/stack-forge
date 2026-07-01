@@ -5,9 +5,11 @@ export interface ProviderSelection {
   reason: "override" | "preferred" | "priority" | "fallback" | "default";
 }
 
-const SCORE_PREFERRED = 10_000;
-const SCORE_DEFAULT = 5_000;
+const SCORE_PREFERRED = 100_000;
+const SCORE_DEFAULT = 10_000;
 const SCORE_FALLBACK = 1_000;
+const SCORE_PRIORITY_MULTIPLIER = 10;
+const MAX_PRIORITY = 50;
 
 function isProviderEligibleForCapability(
   provider: DetectedProvider,
@@ -29,9 +31,9 @@ function scoreProviderForCapability(
   const routing = definition?.routing ?? provider.routing;
   const preferred = routing?.preferred_for?.includes(capabilityName) ?? false;
   const fallback = routing?.fallback_for?.includes(capabilityName) ?? false;
-  const priority = routing?.priority ?? 0;
+  const priority = Math.min(routing?.priority ?? 0, MAX_PRIORITY);
   const ruleCount = provider.matched_rule_count ?? 1;
-  const baseScore = priority * 100 + ruleCount;
+  const baseScore = priority * SCORE_PRIORITY_MULTIPLIER + ruleCount;
 
   if (preferred) {
     return { score: SCORE_PREFERRED + baseScore, reason: "preferred" };

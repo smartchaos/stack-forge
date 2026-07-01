@@ -118,6 +118,10 @@ function checkFileContent(req: Requirement): RequirementResult {
   };
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 async function checkExportExists(req: Requirement): Promise<RequirementResult> {
   if (!req.symbol) {
     return {
@@ -140,7 +144,7 @@ async function checkExportExists(req: Requirement): Promise<RequirementResult> {
       message: `File not found: ${req.file}`,
     };
   }
-  const exportPattern = new RegExp(`export\\s+(?:async\\s+)?(?:function|const|class|type|interface)\\s+${req.symbol}\\b`);
+  const exportPattern = new RegExp(`export\\s+(?:async\\s+)?(?:function|const|class|type|interface)\\s+${escapeRegExp(req.symbol)}\\b`);
   const passed = exportPattern.test(content);
   return {
     id: req.id,

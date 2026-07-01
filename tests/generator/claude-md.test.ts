@@ -49,6 +49,15 @@ describe("claude-md generator", () => {
     expect(matches?.length).toBe(1);
   });
 
+  it("preserves trailing whitespace in user's original CLAUDE.md", async () => {
+    const original = "# Intro\n\nSome text.   \n\n\n";
+    await writeFile(join(testDir, "CLAUDE.md"), original);
+    await generateClaudeMd(testDir, baseOptions);
+    const content = await readFile(join(testDir, "CLAUDE.md"), "utf-8");
+    expect(content.startsWith("# Intro\n\nSome text.   \n\n\n")).toBe(true);
+    expect(content).toContain("## Stack Forge");
+  });
+
   it("creates providers.md with detected providers", async () => {
     const opts = {
       ...baseOptions,

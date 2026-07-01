@@ -198,6 +198,40 @@ describe("matcher", () => {
     expect(result.test).toBeUndefined();
   });
 
+  it("does not match skill_exists match_name as substring", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      skill_dirs: ["testing-utils", "my-test-dir", "contest"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "skill_exists", match_name: "test" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeUndefined();
+  });
+
+  it("matches skill_exists match_name exactly", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      skill_dirs: ["other", "test"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["test"],
+        detect: [{ type: "skill_exists", match_name: "test" }],
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeDefined();
+  });
+
   it("stores matched rule count and routing metadata on detected providers", () => {
     const scan: ScanResult = {
       ...baseScan,

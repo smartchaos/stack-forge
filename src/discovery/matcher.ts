@@ -10,7 +10,7 @@ function matchesDetection(
       return scan.plugins.includes(rule.name || "");
     case "skill_exists":
       return scan.skill_dirs.some((dir) => {
-        if (rule.match_name) return dir.includes(rule.match_name);
+        if (rule.match_name) return dir === rule.match_name;
         if (rule.path) {
           const pathParts = rule.path.replace(/\/$/, "").split("/");
           const dirParts = dir.replace(/\/$/, "").split("/");

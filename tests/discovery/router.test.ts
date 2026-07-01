@@ -57,6 +57,50 @@ describe("router", () => {
     });
   });
 
+  it("prefers fallback provider over high-priority non-fallback provider", () => {
+    const detected: Record<string, DetectedProvider> = {
+      "fallback-spec": {
+        name: "fallback-spec",
+        capabilities: ["specification"],
+        source: "detected:fallback-spec",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      "high-priority": {
+        name: "high-priority",
+        capabilities: ["specification"],
+        source: "detected:high-priority",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+    };
+
+    const providers: Record<string, ProviderDefinition> = {
+      "fallback-spec": {
+        name: "fallback-spec",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 0, fallback_for: ["specification"] },
+      },
+      "high-priority": {
+        name: "high-priority",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 50 },
+      },
+    };
+
+    const selection = selectProviderForCapability(
+      "specification",
+      specificationCapability,
+      detected,
+      providers
+    );
+
+    expect(selection.provider).toBe("fallback-spec");
+    expect(selection.reason).toBe("fallback");
+  });
+
   it("falls back to default provider when no detected provider is eligible", () => {
     const selection = selectProviderForCapability(
       "specification",

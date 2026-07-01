@@ -82,7 +82,7 @@ export async function runHealthcheck(
   const merged = mergeHealthWithRecord(results, previous);
 
   await writeHealthRecord(cforgeDir, merged);
-  printResults(results, previous);
+  printResults(results, merged);
 
   const stale = checkStaleness(merged);
   if (stale.length > 0 && options.verbose) {
