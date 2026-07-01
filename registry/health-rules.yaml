@@ -2,8 +2,6 @@ superpowers:
   checks:
     - type: plugin_installed
       name: "superpowers"
-    - type: skill_exists
-      path: "~/.claude/skills/superpowers/"
   critical: true
 
 feature-dev:
