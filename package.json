@@ -4,7 +4,7 @@
   "description": "Claude Code workflow orchestration engine",
   "type": "module",
   "bin": {
-    "cforge": "./dist/index.js"
+    "cforge": "dist/index.js"
   },
   "files": [
     "dist",
@@ -31,7 +31,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/smartchaos/stack-forge.git"
+    "url": "git+https://github.com/smartchaos/stack-forge.git"
   },
   "bugs": {
     "url": "https://github.com/smartchaos/stack-forge/issues"
