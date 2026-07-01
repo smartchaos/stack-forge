@@ -1,15 +1,17 @@
 import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import type { DetectedProvider } from "../types/provider.js";
+import { buildProviderMap } from "../discovery/router.js";
+import { loadProviders } from "../discovery/registry.js";
+import type { CapabilityDefinition, DetectedProvider, ProviderDefinition } from "../types/provider.js";
 import type { ManifestEntry } from "../types/config.js";
-import type { CapabilityDefinition } from "../types/provider.js";
 
 export interface ClaudeMdOptions {
   workflowName: string;
   detected: Record<string, DetectedProvider>;
   manifest: ManifestEntry[];
   capabilities: Record<string, CapabilityDefinition>;
+  providerDefinitions?: Record<string, ProviderDefinition>;
 }
 
 function buildStackForgeSection(options: ClaudeMdOptions): string {
@@ -32,15 +34,15 @@ function buildStackForgeSection(options: ClaudeMdOptions): string {
 }
 
 function buildProvidersMd(options: ClaudeMdOptions): string {
-  const { detected, manifest, capabilities } = options;
+  const { detected, manifest, capabilities, providerDefinitions = {} } = options;
+  const providerSelections = buildProviderMap(capabilities, detected, providerDefinitions);
 
-  const providerStatus: { capability: string; provider: string; ready: boolean; installCmd?: string }[] = [];
+  const providerStatus: { capability: string; provider: string; ready: boolean; statusLabel: string; installCmd?: string }[] = [];
   for (const [capName, capDef] of Object.entries(capabilities)) {
-    const matchedProvider = Object.values(detected).find((d) =>
-      d.capabilities.includes(capName)
-    );
-    const ready = !!matchedProvider;
-    const providerName = matchedProvider?.name || capDef.default_provider;
+    const providerName = providerSelections[capName]?.provider || capDef.default_provider;
+    const isBuiltin = providerName === "builtin";
+    const ready = isBuiltin || !!detected[providerName];
+    const statusLabel = isBuiltin ? "Built-in" : "Ready";
 
     const manifestEntry = manifest.find((m) => m.name === providerName);
     const installCmd = !ready && manifestEntry ? manifestEntry.install.command : undefined;
@@ -49,6 +51,7 @@ function buildProvidersMd(options: ClaudeMdOptions): string {
       capability: capDef.name,
       provider: providerName,
       ready,
+      statusLabel,
       installCmd,
     });
   }
@@ -62,7 +65,7 @@ function buildProvidersMd(options: ClaudeMdOptions): string {
     content += `| Capability | Provider | Status |\n`;
     content += `|------------|----------|--------|\n`;
     for (const p of readyProviders) {
-      content += `| ${p.capability} | ${p.provider} | Ready |\n`;
+      content += `| ${p.capability} | ${p.provider} | ${p.statusLabel} |\n`;
     }
     content += `\n`;
   }
@@ -87,7 +90,8 @@ export async function generateProvidersMd(
 ): Promise<void> {
   const cforgeDir = join(projectDir, ".cforge");
   const providersPath = join(cforgeDir, "providers.md");
-  const content = buildProvidersMd(options);
+  const providerDefinitions = options.providerDefinitions || await loadProviders();
+  const content = buildProvidersMd({ ...options, providerDefinitions });
   await writeFile(providersPath, content, "utf-8");
 }
 

@@ -16,12 +16,33 @@ vi.mock("../../src/discovery/scanner.js", () => ({
 }));
 
 vi.mock("../../src/discovery/matcher.js", () => ({
-  matchProviders: vi.fn().mockResolvedValue({}),
+  matchProviders: vi.fn().mockReturnValue({}),
 }));
 
 vi.mock("../../src/discovery/registry.js", () => ({
-  loadProviders: vi.fn().mockResolvedValue([]),
-  loadCapabilities: vi.fn().mockResolvedValue({}),
+  loadProviders: vi.fn().mockResolvedValue({
+    superpowers: {
+      name: "superpowers",
+      capabilities: ["brainstorm"],
+      detect: [],
+      routing: { preferred_for: ["brainstorm"], priority: 100 },
+    },
+    "brainstorm-lite": {
+      name: "brainstorm-lite",
+      capabilities: ["brainstorm"],
+      detect: [],
+      routing: { priority: 10 },
+    },
+  }),
+  loadCapabilities: vi.fn().mockResolvedValue({
+    brainstorm: {
+      name: "Brainstorm",
+      description: "Idea refinement",
+      input: "idea",
+      output: "proposal.md",
+      default_provider: "superpowers",
+    },
+  }),
   loadManifest: vi.fn().mockResolvedValue([]),
 }));
 
@@ -42,6 +63,7 @@ vi.mock("../../src/generator/claude-md.js", () => ({
   generateProvidersMd: vi.fn().mockResolvedValue(undefined),
 }));
 
+const { matchProviders } = await import("../../src/discovery/matcher.js");
 const { runInit } = await import("../../src/cli/init.js");
 
 describe("cforge init", () => {
@@ -52,6 +74,8 @@ describe("cforge init", () => {
   });
 
   afterEach(async () => {
+    vi.mocked(matchProviders).mockReset();
+    vi.mocked(matchProviders).mockReturnValue({});
     await rm(testDir, { recursive: true, force: true });
   });
 
@@ -101,9 +125,36 @@ describe("cforge init", () => {
   });
 
   it("writes providers.yaml with empty providers", async () => {
+    vi.mocked(matchProviders).mockReturnValue({});
     await runInit(testDir);
 
     const providersContent = await readFile(join(testDir, ".cforge/providers.yaml"), "utf-8");
     expect(providersContent).toContain("providers:");
+  });
+
+  it("prefers routed provider when multiple detected providers share a capability", async () => {
+    vi.mocked(matchProviders).mockReturnValue({
+      superpowers: {
+        name: "superpowers",
+        capabilities: ["brainstorm"],
+        source: "detected:superpowers",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+        routing: { preferred_for: ["brainstorm"], priority: 100 },
+      },
+      "brainstorm-lite": {
+        name: "brainstorm-lite",
+        capabilities: ["brainstorm"],
+        source: "detected:brainstorm-lite",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 2,
+        routing: { priority: 10 },
+      },
+    });
+
+    await runInit(testDir);
+
+    const configContent = await readFile(join(testDir, ".cforge/config.yaml"), "utf-8");
+    expect(configContent).toContain("brainstorm: superpowers");
   });
 });

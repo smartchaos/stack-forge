@@ -197,4 +197,31 @@ describe("matcher", () => {
     const result = matchProviders(scan, providers);
     expect(result.test).toBeUndefined();
   });
+
+  it("stores matched rule count and routing metadata on detected providers", () => {
+    const scan: ScanResult = {
+      ...baseScan,
+      skill_dirs: ["gstack", "_gstack-command"],
+    };
+    const providers: Record<string, ProviderDefinition> = {
+      test: {
+        name: "test",
+        capabilities: ["release"],
+        detect: [
+          { type: "skill_exists", match_name: "gstack" },
+          { type: "slash_command", command_name: "gstack" },
+        ],
+        routing: {
+          priority: 50,
+          preferred_for: ["release"],
+        },
+      },
+    };
+
+    const result = matchProviders(scan, providers);
+    expect(result.test).toBeDefined();
+    expect(result.test.matched_rule_count).toBe(2);
+    expect(result.test.routing?.priority).toBe(50);
+    expect(result.test.routing?.preferred_for).toContain("release");
+  });
 });
