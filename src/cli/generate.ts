@@ -21,8 +21,8 @@ export async function runGenerate(projectDir: string): Promise<void> {
 
   // Re-scan providers for CLAUDE.md generation
   const scanResult = await scanForPlugins();
-  const providerDefs = await loadProviders();
-  const detected = matchProviders(scanResult, providerDefs);
+  const providerDefinitions = await loadProviders();
+  const detected = matchProviders(scanResult, providerDefinitions);
   const capabilities = await loadCapabilities();
   const manifest = await loadManifest();
 
@@ -56,6 +56,7 @@ export async function runGenerate(projectDir: string): Promise<void> {
     detected,
     manifest,
     capabilities,
+    providerDefinitions,
   });
 
   console.log("Configuration regenerated successfully.");

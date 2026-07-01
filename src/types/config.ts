@@ -1,4 +1,6 @@
-export type ProviderOverride = string | "builtin" | "none";
+import { BUILTIN_PROVIDER } from "./provider.js";
+
+export type ProviderOverride = string | typeof BUILTIN_PROVIDER | "none";
 
 export interface ForgeConfig {
   workflow: string;
