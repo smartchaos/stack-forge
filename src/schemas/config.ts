@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { BUILTIN_PROVIDER } from "../types/provider.js";
+
 export const StageNameSchema = z.enum([
   "diagnosis",
   "brainstorm",
@@ -42,7 +44,7 @@ export const WorkflowStateSchema = z.object({
 export const ForgeConfigSchema = z.object({
   workflow: z.string(),
   providers: z.record(z.string(), z.string()),
-  overrides: z.record(z.string(), z.union([z.string(), z.literal("builtin"), z.literal("none")])),
+  overrides: z.record(z.string(), z.union([z.string(), z.literal(BUILTIN_PROVIDER), z.literal("none")])),
   stages: z.object({
     auto_advance: z.boolean(),
     pause_on_review: z.boolean(),

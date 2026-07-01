@@ -5,6 +5,10 @@ export interface ProviderSelection {
   reason: "override" | "preferred" | "priority" | "fallback" | "default";
 }
 
+const SCORE_PREFERRED = 10_000;
+const SCORE_DEFAULT = 5_000;
+const SCORE_FALLBACK = 1_000;
+
 function isProviderEligibleForCapability(
   provider: DetectedProvider,
   definition: ProviderDefinition | undefined,
@@ -12,7 +16,7 @@ function isProviderEligibleForCapability(
 ): boolean {
   if (!provider.capabilities.includes(capabilityName)) return false;
 
-  const excluded = definition?.routing?.excluded_capabilities || provider.routing?.excluded_capabilities || [];
+  const excluded = definition?.routing?.excluded_capabilities ?? provider.routing?.excluded_capabilities ?? [];
   return !excluded.includes(capabilityName);
 }
 
@@ -22,25 +26,44 @@ function scoreProviderForCapability(
   capabilityName: string,
   defaultProvider: string
 ): { score: number; reason: ProviderSelection["reason"] } {
-  const routing = definition?.routing || provider.routing;
-  const preferred = routing?.preferred_for?.includes(capabilityName) || false;
-  const fallback = routing?.fallback_for?.includes(capabilityName) || false;
+  const routing = definition?.routing ?? provider.routing;
+  const preferred = routing?.preferred_for?.includes(capabilityName) ?? false;
+  const fallback = routing?.fallback_for?.includes(capabilityName) ?? false;
   const priority = routing?.priority ?? 0;
   const ruleCount = provider.matched_rule_count ?? 1;
+  const baseScore = priority * 100 + ruleCount;
 
   if (preferred) {
-    return { score: 10_000 + priority * 100 + ruleCount, reason: "preferred" };
+    return { score: SCORE_PREFERRED + baseScore, reason: "preferred" };
   }
 
   if (provider.name === defaultProvider) {
-    return { score: 5_000 + priority * 100 + ruleCount, reason: "default" };
+    return { score: SCORE_DEFAULT + baseScore, reason: "default" };
   }
 
   if (fallback) {
-    return { score: 1_000 + priority * 100 + ruleCount, reason: "fallback" };
+    return { score: SCORE_FALLBACK + baseScore, reason: "fallback" };
   }
 
-  return { score: priority * 100 + ruleCount, reason: "priority" };
+  return { score: baseScore, reason: "priority" };
+}
+
+function pickBestProvider(
+  candidates: { provider: DetectedProvider; scored: { score: number; reason: ProviderSelection["reason"] } }[]
+): { provider: DetectedProvider; scored: { score: number; reason: ProviderSelection["reason"] } } | undefined {
+  if (candidates.length === 0) return undefined;
+
+  let best = candidates[0];
+  for (let i = 1; i < candidates.length; i++) {
+    const current = candidates[i];
+    if (
+      current.scored.score > best.scored.score ||
+      (current.scored.score === best.scored.score && current.provider.name.localeCompare(best.provider.name) < 0)
+    ) {
+      best = current;
+    }
+  }
+  return best;
 }
 
 export function selectProviderForCapability(
@@ -59,18 +82,14 @@ export function selectProviderForCapability(
     .map((provider) => ({
       provider,
       scored: scoreProviderForCapability(provider, providers[provider.name], capabilityName, capability.default_provider),
-    }))
-    .sort((left, right) => {
-      if (right.scored.score !== left.scored.score) {
-        return right.scored.score - left.scored.score;
-      }
-      return left.provider.name.localeCompare(right.provider.name);
-    });
+    }));
 
-  if (candidates.length > 0) {
+  const best = pickBestProvider(candidates);
+
+  if (best) {
     return {
-      provider: candidates[0].provider.name,
-      reason: candidates[0].scored.reason,
+      provider: best.provider.name,
+      reason: best.scored.reason,
     };
   }
 

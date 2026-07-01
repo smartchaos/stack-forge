@@ -3,6 +3,7 @@ import { join } from "path";
 import { existsSync } from "fs";
 import { buildProviderMap } from "../discovery/router.js";
 import { loadProviders } from "../discovery/registry.js";
+import { BUILTIN_PROVIDER } from "../types/provider.js";
 import type { CapabilityDefinition, DetectedProvider, ProviderDefinition } from "../types/provider.js";
 import type { ManifestEntry } from "../types/config.js";
 
@@ -40,7 +41,7 @@ function buildProvidersMd(options: ClaudeMdOptions): string {
   const providerStatus: { capability: string; provider: string; ready: boolean; statusLabel: string; installCmd?: string }[] = [];
   for (const [capName, capDef] of Object.entries(capabilities)) {
     const providerName = providerSelections[capName]?.provider || capDef.default_provider;
-    const isBuiltin = providerName === "builtin";
+    const isBuiltin = providerName === BUILTIN_PROVIDER;
     const ready = isBuiltin || !!detected[providerName];
     const statusLabel = isBuiltin ? "Built-in" : "Ready";
 

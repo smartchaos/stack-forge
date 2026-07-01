@@ -1,3 +1,5 @@
+export const BUILTIN_PROVIDER = "builtin";
+
 export type DetectionType =
   | "skill_exists"
   | "slash_command"

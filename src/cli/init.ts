@@ -70,11 +70,14 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
       if (result.status === "installed") {
         const entry = missing.find((m) => m.name === result.provider);
         if (entry) {
+          const matchedRuleCount = providerDefs[entry.name]?.detect.length ?? 1;
           detected[result.provider] = {
             name: entry.name,
             capabilities: entry.capabilities,
             source: "installed-by-cforge",
             detected_at: new Date().toISOString(),
+            matched_rule_count: matchedRuleCount,
+            routing: providerDefs[entry.name]?.routing,
           };
         }
       }
