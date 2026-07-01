@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import { readFileSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import { Command } from "commander";
 import { runInit } from "./cli/init.js";
 import { runStatus } from "./cli/status.js";
@@ -10,12 +13,15 @@ import { runValidate } from "./cli/validate.js";
 import { runReset } from "./cli/reset.js";
 import { logger } from "./logger.js";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(resolve(__dirname, "../package.json"), "utf-8"));
+
 const program = new Command();
 
 program
   .name("cforge")
   .description("Claude Code workflow orchestration engine")
-  .version("0.2.3");
+  .version(pkg.version);
 
 // Default command: cforge [workflow] [description]
 program
