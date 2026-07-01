@@ -53,21 +53,28 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
   const providerDefs = await loadProviders();
   const scannedProviders = matchProviders(scanResult, providerDefs);
 
-  // 4. Merge existing + scanned
+  // 4. Merge existing + scanned, preserving user-customized routing if scan doesn't provide it
   let detected: Record<string, DetectedProvider> = { ...existingProviders };
   for (const [name, provider] of Object.entries(scannedProviders)) {
-    detected[name] = { ...existingProviders[name], ...provider };
+    const existing = existingProviders[name];
+    detected[name] = {
+      ...existing,
+      ...provider,
+      routing: provider.routing ?? existing?.routing,
+    };
   }
   logger.info({ providers: Object.keys(detected) }, "Detected providers");
 
   // 5. Load manifest and auto-install missing required/recommended
   const manifest = await loadManifest();
   const missing = manifest.filter((m) => !Object.keys(detected).includes(m.name));
+  let didAutoInstall = false;
 
   if (missing.length > 0) {
     const results = await installProvidersSilent(missing);
     for (const result of results) {
       if (result.status === "installed") {
+        didAutoInstall = true;
         const entry = missing.find((m) => m.name === result.provider);
         if (entry) {
           const matchedRuleCount = providerDefs[entry.name]?.detect.length ?? 1;
@@ -102,10 +109,8 @@ export async function runInit(projectDir: string, options: InitOptions = {}): Pr
     }
   }
 
-  // 5b. Run healthcheck
-  const finalScanResult = Object.keys(detected).length > Object.keys(scannedProviders).length
-    ? await scanForPlugins()
-    : scanResult;
+  // 5b. Run healthcheck (re-scan if auto-install added new providers)
+  const finalScanResult = didAutoInstall ? await scanForPlugins() : scanResult;
   const healthResults = await runHealthCheck(finalScanResult);
   const healthRecord = mergeHealthWithRecord(healthResults, null);
   await writeHealthRecord(cforgeDir, healthRecord);

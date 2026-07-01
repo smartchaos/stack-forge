@@ -5,6 +5,10 @@ export interface ProviderSelection {
   reason: "override" | "preferred" | "priority" | "fallback" | "default";
 }
 
+// Score tier constants. Each tier is an order of magnitude apart so that
+// tier always dominates priority within-tier ranking.  The gap between
+// SCORE_FALLBACK (1_000) and SCORE_PRIORITY_MULTIPLIER * MAX_PRIORITY (10*50=500)
+// guarantees: preferred > default > fallback > priority-only.
 const SCORE_PREFERRED = 100_000;
 const SCORE_DEFAULT = 10_000;
 const SCORE_FALLBACK = 1_000;

@@ -163,7 +163,7 @@ export function mergeHealthWithRecord(
 
   return {
     last_check: now,
-    stale_threshold_hours: previous?.stale_threshold_hours || 168,
+    stale_threshold_hours: previous?.stale_threshold_hours ?? 168,
     providers,
   };
 }

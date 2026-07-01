@@ -1,5 +1,5 @@
 import { readFile, stat } from "fs/promises";
-import { resolve, dirname } from "path";
+import { resolve, dirname, isAbsolute } from "path";
 import { fileURLToPath } from "url";
 import { existsSync, readFileSync } from "fs";
 import { parse as parseYaml } from "yaml";
@@ -45,7 +45,7 @@ export async function loadRequirements(): Promise<Requirement[]> {
 }
 
 function resolveProjectPath(filePath: string): string {
-  return filePath.startsWith("/") ? filePath : resolve(PROJECT_ROOT, filePath);
+  return isAbsolute(filePath) ? filePath : resolve(PROJECT_ROOT, filePath);
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -72,7 +72,7 @@ function checkFileExists(req: Requirement): RequirementResult {
   };
 }
 
-function checkFileAbsent(req: Requirement): RequirementResult {
+async function checkFileAbsent(req: Requirement): Promise<RequirementResult> {
   if (!req.pattern) {
     return {
       id: req.id,
@@ -83,10 +83,8 @@ function checkFileAbsent(req: Requirement): RequirementResult {
       message: "No pattern specified for file_absent check",
     };
   }
-  const content = existsSync(resolveProjectPath(req.file))
-    ? readFileSync(resolveProjectPath(req.file), "utf-8")
-    : "";
-  const passed = !content.includes(req.pattern);
+  const content = await readFileContent(req.file);
+  const passed = content === null ? false : !content.includes(req.pattern);
   return {
     id: req.id,
     description: req.description,
@@ -97,7 +95,7 @@ function checkFileAbsent(req: Requirement): RequirementResult {
   };
 }
 
-function checkFileContent(req: Requirement): RequirementResult {
+async function checkFileContent(req: Requirement): Promise<RequirementResult> {
   if (!req.pattern) {
     return {
       id: req.id,
@@ -108,10 +106,8 @@ function checkFileContent(req: Requirement): RequirementResult {
       message: "No pattern specified for file_content check",
     };
   }
-  const content = existsSync(resolveProjectPath(req.file))
-    ? readFileSync(resolveProjectPath(req.file), "utf-8")
-    : "";
-  const passed = content.includes(req.pattern);
+  const content = await readFileContent(req.file);
+  const passed = content === null ? false : content.includes(req.pattern);
   return {
     id: req.id,
     description: req.description,

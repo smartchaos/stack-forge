@@ -4,7 +4,7 @@ superpowers:
     - type: plugin_installed
       name: "superpowers"
   routing:
-    priority: 100
+    priority: 50
     preferred_for: [brainstorm, planning]
 
 feature-dev:
@@ -13,7 +13,7 @@ feature-dev:
     - type: plugin_installed
       name: "feature-dev"
   routing:
-    priority: 100
+    priority: 50
     preferred_for: [specification]
 
 code-review:
@@ -22,7 +22,7 @@ code-review:
     - type: plugin_installed
       name: "code-review"
   routing:
-    priority: 100
+    priority: 50
     preferred_for: [review]
 
 gstack:
@@ -33,7 +33,7 @@ gstack:
     - type: skill_exists
       path: "~/.claude/skills/gstack/"
   routing:
-    priority: 100
+    priority: 50
     preferred_for: [release]
 
 claude-mem:
@@ -42,5 +42,5 @@ claude-mem:
     - type: mcp_server_configured
       name: "claude-mem"
   routing:
-    priority: 100
+    priority: 50
     preferred_for: [memory]
