@@ -64,7 +64,7 @@ function pickBestProvider(
     const current = candidates[i];
     if (
       current.scored.score > best.scored.score ||
-      (current.scored.score === best.scored.score && current.provider.name.localeCompare(best.provider.name) < 0)
+      (current.scored.score === best.scored.score && current.provider.name.localeCompare(best.provider.name, "en", { sensitivity: "base" }) < 0)
     ) {
       best = current;
     }
