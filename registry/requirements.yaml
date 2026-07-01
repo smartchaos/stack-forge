@@ -29,10 +29,10 @@ requirements:
     critical: true
 
   - id: REQ-005
-    description: "capabilities.yaml default_provider for review must be code-review"
+    description: "capabilities.yaml default_provider for review must be builtin"
     type: file_content
     file: registry/capabilities.yaml
-    pattern: "default_provider: code-review"
+    pattern: "default_provider: builtin"
     critical: true
 
   - id: REQ-006

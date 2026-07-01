@@ -17,7 +17,7 @@ feature-dev:
     preferred_for: [specification]
 
 code-review:
-  capabilities: [review]
+  capabilities: [pr-review]
   detect:
     - type: plugin_installed
       name: "code-review"

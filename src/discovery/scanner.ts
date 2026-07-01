@@ -16,6 +16,11 @@ export interface ScanOptions {
   mcpJson?: string;
 }
 
+interface PluginInfo {
+  name: string;
+  installPath: string;
+}
+
 const DEFAULT_SKILLS_DIR = join(homedir(), ".claude", "skills");
 
 async function exists(path: string): Promise<boolean> {
@@ -33,15 +38,22 @@ async function scanSkillDirs(skillsDir: string): Promise<string[]> {
   return entries.filter((e) => e.isDirectory()).map((e) => e.name);
 }
 
-async function scanPlugins(installedPluginsJson: string): Promise<{ plugins: string[]; error?: string }> {
+async function scanPlugins(installedPluginsJson: string): Promise<{ plugins: PluginInfo[]; error?: string }> {
   if (!(await exists(installedPluginsJson))) return { plugins: [] };
   try {
     const content = await readFile(installedPluginsJson, "utf-8");
     const data = JSON.parse(content);
     if (data.plugins && typeof data.plugins === "object" && !Array.isArray(data.plugins)) {
-      return {
-        plugins: Object.keys(data.plugins).map((key) => key.split("@")[0].split("/").pop() || key),
-      };
+      const plugins: PluginInfo[] = [];
+      for (const [key, entries] of Object.entries(data.plugins)) {
+        if (!Array.isArray(entries) || entries.length === 0) continue;
+        const pluginName = key.split("@")[0].split("/").pop() || key;
+        const installPath = (entries[0] as { installPath?: string }).installPath;
+        if (installPath) {
+          plugins.push({ name: pluginName, installPath });
+        }
+      }
+      return { plugins };
     }
     return { plugins: [] };
   } catch (e) {
@@ -50,6 +62,27 @@ async function scanPlugins(installedPluginsJson: string): Promise<{ plugins: str
       error: `Failed to parse ${installedPluginsJson}: ${e instanceof Error ? e.message : String(e)}`,
     };
   }
+}
+
+async function scanSkillsFromPlugins(plugins: PluginInfo[]): Promise<string[]> {
+  const skillDirs: string[] = [];
+  
+  for (const plugin of plugins) {
+    if (!(await exists(plugin.installPath))) continue;
+    
+    // Check for skills directory at plugin root level
+    const skillsPath = join(plugin.installPath, "skills");
+    if (await exists(skillsPath)) {
+      const entries = await readdir(skillsPath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory() && !skillDirs.includes(entry.name)) {
+          skillDirs.push(entry.name);
+        }
+      }
+    }
+  }
+  
+  return skillDirs;
 }
 
 async function scanMcpServers(mcpJson: string): Promise<{ mcp_servers: string[]; error?: string }> {
@@ -82,13 +115,22 @@ export async function scanForPlugins(
     scanMcpServers(mcpJson),
   ]);
 
+  // Scan skills from plugin installPath (only when using default skills directory)
+  let pluginSkillDirs: string[] = [];
+  if (!options.skillsDir && pluginsResult.plugins.length > 0) {
+    pluginSkillDirs = await scanSkillsFromPlugins(pluginsResult.plugins);
+  }
+
+  // Merge skill directories, deduplicate
+  const allSkillDirs = [...new Set([...skill_dirs, ...pluginSkillDirs])];
+
   const errors: string[] = [];
   if (pluginsResult.error) errors.push(pluginsResult.error);
   if (mcpResult.error) errors.push(mcpResult.error);
 
   return {
-    skill_dirs,
-    plugins: pluginsResult.plugins,
+    skill_dirs: allSkillDirs,
+    plugins: pluginsResult.plugins.map((p) => p.name),
     mcp_servers: mcpResult.mcp_servers,
     cli_commands: [],
     errors: errors.length > 0 ? errors : undefined,
