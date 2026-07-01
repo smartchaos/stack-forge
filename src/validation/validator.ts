@@ -1,7 +1,7 @@
-import { readFile, stat } from "fs/promises";
+import { readFile } from "fs/promises";
 import { resolve, dirname, isAbsolute } from "path";
 import { fileURLToPath } from "url";
-import { existsSync, readFileSync } from "fs";
+import { existsSync } from "fs";
 import { parse as parseYaml } from "yaml";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -46,10 +46,6 @@ export async function loadRequirements(): Promise<Requirement[]> {
 
 function resolveProjectPath(filePath: string): string {
   return isAbsolute(filePath) ? filePath : resolve(PROJECT_ROOT, filePath);
-}
-
-async function fileExists(filePath: string): Promise<boolean> {
-  return existsSync(resolveProjectPath(filePath));
 }
 
 async function readFileContent(filePath: string): Promise<string | null> {
