@@ -101,6 +101,92 @@ describe("router", () => {
     expect(selection.reason).toBe("fallback");
   });
 
+  it("prefers the default provider over a fallback provider", () => {
+    const detected: Record<string, DetectedProvider> = {
+      "feature-dev": {
+        name: "feature-dev",
+        capabilities: ["specification"],
+        source: "detected:feature-dev",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      fallback: {
+        name: "fallback",
+        capabilities: ["specification"],
+        source: "detected:fallback",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+    };
+
+    const providers: Record<string, ProviderDefinition> = {
+      "feature-dev": {
+        name: "feature-dev",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 0 },
+      },
+      fallback: {
+        name: "fallback",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 50, fallback_for: ["specification"] },
+      },
+    };
+
+    const selection = selectProviderForCapability(
+      "specification",
+      specificationCapability,
+      detected,
+      providers
+    );
+
+    expect(selection).toEqual({ provider: "feature-dev", reason: "default" });
+  });
+
+  it("prefers a fallback provider over a priority-only provider", () => {
+    const detected: Record<string, DetectedProvider> = {
+      fallback: {
+        name: "fallback",
+        capabilities: ["specification"],
+        source: "detected:fallback",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+      priority: {
+        name: "priority",
+        capabilities: ["specification"],
+        source: "detected:priority",
+        detected_at: "2026-06-30T00:00:00.000Z",
+        matched_rule_count: 1,
+      },
+    };
+
+    const providers: Record<string, ProviderDefinition> = {
+      fallback: {
+        name: "fallback",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 0, fallback_for: ["specification"] },
+      },
+      priority: {
+        name: "priority",
+        capabilities: ["specification"],
+        detect: [],
+        routing: { priority: 50 },
+      },
+    };
+
+    const selection = selectProviderForCapability(
+      "specification",
+      specificationCapability,
+      detected,
+      providers
+    );
+
+    expect(selection).toEqual({ provider: "fallback", reason: "fallback" });
+  });
+
   it("maintains score ordering: preferred > default > fallback > priority", () => {
     const detected: Record<string, DetectedProvider> = {
       plain: {

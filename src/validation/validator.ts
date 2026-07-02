@@ -140,7 +140,7 @@ async function checkExportExists(req: Requirement): Promise<RequirementResult> {
       message: `File not found: ${req.file}`,
     };
   }
-  const exportPattern = new RegExp(`export\\s+(?:async\\s+)?(?:function|const|class|type|interface)\\s+${escapeRegExp(req.symbol)}\\b`);
+  const exportPattern = new RegExp(`export\\s+(?:async\\s+)?(?:function|const|class|type|interface)\\s+${escapeRegExp(req.symbol)}(?![$_A-Za-z0-9])`);
   const passed = exportPattern.test(content);
   return {
     id: req.id,

@@ -1,6 +1,6 @@
 import { stringify as dumpYaml, parse as parseYaml } from "yaml";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdir, rm, readFile, stat } from "fs/promises";
+import { mkdir, rm, readFile, stat, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 
@@ -65,6 +65,9 @@ vi.mock("../../src/generator/claude-md.js", () => ({
 }));
 
 const { matchProviders } = await import("../../src/discovery/matcher.js");
+const { scanForPlugins } = await import("../../src/discovery/scanner.js");
+const { installProvidersSilent } = await import("../../src/discovery/auto-installer.js");
+const { loadManifest } = await import("../../src/discovery/registry.js");
 const { runInit } = await import("../../src/cli/init.js");
 
 describe("cforge init", () => {
@@ -77,6 +80,12 @@ describe("cforge init", () => {
   afterEach(async () => {
     vi.mocked(matchProviders).mockReset();
     vi.mocked(matchProviders).mockReturnValue({});
+    vi.mocked(scanForPlugins).mockReset();
+    vi.mocked(scanForPlugins).mockResolvedValue({});
+    vi.mocked(installProvidersSilent).mockReset();
+    vi.mocked(installProvidersSilent).mockResolvedValue([]);
+    vi.mocked(loadManifest).mockReset();
+    vi.mocked(loadManifest).mockResolvedValue([]);
     await rm(testDir, { recursive: true, force: true });
   });
 
@@ -147,7 +156,23 @@ describe("cforge init", () => {
 
     await runInit(testDir);
 
-    // Simulate re-init: existing providers.yaml has custom routing, scanned provider has fewer rules
+    await writeFile(
+      join(testDir, ".cforge", "providers.yaml"),
+      dumpYaml({
+        providers: {
+          superpowers: {
+            name: "superpowers",
+            capabilities: ["brainstorm"],
+            source: "detected:superpowers",
+            detected_at: "2026-06-30T00:00:00.000Z",
+            matched_rule_count: 5,
+            routing: { priority: 1 },
+          },
+        },
+      }),
+      "utf-8"
+    );
+
     vi.mocked(matchProviders).mockReturnValue({
       superpowers: {
         name: "superpowers",
@@ -155,6 +180,7 @@ describe("cforge init", () => {
         source: "detected:superpowers",
         detected_at: "2026-07-01T00:00:00.000Z",
         matched_rule_count: 1,
+        routing: { preferred_for: ["brainstorm"], priority: 100 },
       },
     });
 
@@ -168,6 +194,30 @@ describe("cforge init", () => {
     expect(superpowers.routing?.priority).toBe(100);
     expect(superpowers.matched_rule_count).toBe(1);
     expect(superpowers.detected_at).toBe("2026-07-01T00:00:00.000Z");
+  });
+
+  it("re-scans before healthcheck after auto-installing providers", async () => {
+    vi.mocked(loadManifest).mockResolvedValue([
+      {
+        name: "superpowers",
+        description: "Workflow methodology",
+        capabilities: ["brainstorm"],
+        priority: "required",
+        install: { type: "git_clone", command: "install-superpowers" },
+      },
+    ]);
+    vi.mocked(installProvidersSilent).mockResolvedValue([
+      { provider: "superpowers", status: "installed" },
+    ]);
+    vi.mocked(scanForPlugins)
+      .mockResolvedValueOnce({ plugins: [] })
+      .mockResolvedValueOnce({ plugins: ["superpowers"] });
+
+    await runInit(testDir);
+
+    expect(scanForPlugins).toHaveBeenCalledTimes(2);
+    const health = JSON.parse(await readFile(join(testDir, ".cforge", "health.json"), "utf-8"));
+    expect(health.providers.superpowers.status).toBe("healthy");
   });
 
   it("prefers routed provider when multiple detected providers share a capability", async () => {
